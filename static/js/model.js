@@ -426,7 +426,7 @@ Apigee.APIModel.Editor = function() {
         if (authType.split(",").length > 1) {
             authType = authType.substr(0,authType.length-1); // Remove the last extra comma symbol.
         }
-        authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("NOAUTH","No auth");
+        authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","OAuth 2 Password Grant").replace("NOAUTH","No auth");
 
         authTypeElement.html(authType); // Update the auth type HTML element.
         self.updateAuthContainer();
@@ -719,6 +719,8 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='custom_token_container']").show();
             }
+
+            // TODO: Add new ROPC grant
             Apigee.APIModel.initMethodsAuthDialogsEvents();
         }
     };
@@ -791,6 +793,7 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         }
+        // TODO: add new ROPC grant
     };
     this.getCustomTokenCredentials = function() {
         if (!isCutomTokenShown) {
@@ -1056,6 +1059,8 @@ Apigee.APIModel.Editor = function() {
                 }
             }
         }
+
+        // TODO: Add OAuth token to request
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
@@ -1905,6 +1910,8 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             
             // Authentication value construction.
             var authenticationValue = jQuery("[data-role='auth-type']").text()
+
+            // TODO: Add Password Grant
             authenticationValue = authenticationValue.replace("Basic Auth","BASICAUTH").replace("Custom Token","CUSTOM").replace( "OAuth 1","OAUTH1WEBSERVER").replace("OAuth 1 Client Credentials","OAUTH1CLIENTCREDENTIALS").replace("OAuth 2","OAUTH2WEBSERVER").replace("OAuth 2 Client Credentials","OAUTH2CLIENTCREDENTIALS").replace("OAuth 2 Implicit Grant Flow","OAUTH2IMPLICITGRANT").replace("No auth","NOAUTH");
             var authtenticationString = "";
             if (authenticationValue.split(",").length > 1) {
