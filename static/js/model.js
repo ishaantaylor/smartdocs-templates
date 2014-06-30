@@ -405,6 +405,7 @@ Apigee.APIModel.Editor = function() {
     var requestEditor; // A Prism editor for method's request.
     var responseEditor; // A Prism editor for method's response.
     var oauth2Credentials = {}; // Holds OAuth 2 credential details.
+    var oauth2PassCredentials = {}; // Holds OAuth 2 Password Grant credentials
     var customTokenObject = {};
     var isCutomTokenShown = false;
     var custemTokenCredentials = "";
@@ -719,8 +720,46 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='custom_token_container']").show();
             }
+            if (authType.indexOf("OAuth 2 Password Grant") != -1) { // Show password grant info
+                if (authType.indexOf(",") == -1) {
+                    sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"oauth2pass";
+                    selectedAuthScheme = "oauth2pass";
+                }
+                var authCredentials = "";
+                if (localStorage.apisOAuth2PassCredentialsDetails) {
+                    var date = new Date();
+                    var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                    var lsTimeStamp  = localStorage.apisOAuth2CredentialsDetails.split("@@@")[2];
+                    var currentTimeStamp = dateString;
+                    var dtDiff = currentTimeStamp-lsTimeStamp;
+                    var dtDiff = parseInt(self.dateDiff(new Date(currentTimeStamp),new Date(lsTimeStamp)));
+                    if (dtDiff > 30) {
+                        localStorage.removeItem("apisOAuth2PassCredentialsDetails");
+                    } else {
+                        authCredentials = localStorage.apisOAuth2PassCredentialsDetails;
+                    }
+                } else if (sessionStorage.apisOAuth2PassCredentialsDetails) {
+                        authCredentials = sessionStorage.apisOAuth2PassCredentialsDetails;
+                }
+                if (authCredentials !== "") {
+                    // Format of the apisBasicAuthDetails - api name@@@revision number@@@oauth 2 details.
+                    if (apiName == authCredentials.split("@@@")[0]) {
+                        oauth2PassCredentials = jQuery.parseJSON(authCredentials.split("@@@")[1]);
+                        var selected = (apiName == authCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "oauth2pass") ? "selected" : "";
+                        if (selected != "") {
+                            jQuery("[data-role='oauth2pass_container']").addClass(selected);
+                        }
+                        jQuery("[data-role='oauth2pass_container']").find(".link_open_oauth2pass").html("Authenticated");
+                        jQuery("[data-role='oauth2pass_container']").find(".icon-remove").css('display','inline-block');
+                    }
+                }
+                jQuery("[data-role='oauth2pass_container']").show();
 
-            // TODO: Add new ROPC grant
+
+                // TODO: Add new ROPC grant for display / past recall
+            }
+
+
             Apigee.APIModel.initMethodsAuthDialogsEvents();
         }
     };
