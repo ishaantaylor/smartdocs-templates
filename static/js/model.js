@@ -1,4 +1,4 @@
-/*
+/* model.js
  * Copyright (c) 2013, Apigee Corporation. All rights reserved.
  * Apigee(TM) and the Apigee logo are trademarks or
  * registered trademarks of Apigee Corp. or its subsidiaries. All other
@@ -34,7 +34,7 @@ Apigee.APIModel.Common = function() {
     }
     var MODAL_SESSION_WARNING = '<p>Your credentials are saved for the session only.</p>';
 
-    var MODAL_BUTTONS = '<a class="btn btn-primary button_save_modal" href="javascript:void(0)">Save</a><a class="button_close_modal" href="javascript:void(0)">Cancel</a>'
+    var MODAL_BUTTONS = '<a class="btn btn-primary button_save_modal" href="javascript:void(0)">Save</a><a class="button_close_modal" href="javascript:void(0)">Cancel</a><a class="button_token_request_modal" href="javascript:void(0)">Send Token Request</a>'
     var MODAL_BUTTONS_EDIT = MODAL_BUTTONS.replace("Cancel","Discard");
     // Private methods
     /**
@@ -389,27 +389,28 @@ Apigee.APIModel.Editor = function() {
     var self = this; // Keep a reference of the current class when the context of 'this' is changing.
     // Check if it needed here, bacase it is not used anywhere other then init
     var months = ["January","February","March","April","May","June","July","August","September","October","November","December"]; // Stores all the month's display name.
-    var lastModifiedDate; // Last modified date in readable form.
-    var methodURLElement; // Holds the resource URL element.
-    var basicAuth = ""; // Holds basic auth value.
-    var userEmail = ""; // Holds user email.
-    var authType; // Holds auth type details.
-    var rawCode = ""; // Stores response content of the testApi call.
-    var bodyContent; // Stores request content of the testApi call.
+    var lastModifiedDate;               // Last modified date in readable form.
+    var methodURLElement;               // Holds the resource URL element.
+    var basicAuth = "";                 // Holds basic auth value.
+    var passwordGrantCredentials = "";  // Holds password grant token (bearer).
+    var userEmail = "";                 // Holds user email.
+    var authType;                       // Holds auth type details.
+    var rawCode = "";                   // Stores response content of the testApi call.
+    var bodyContent;                    // Stores request content of the testApi call.
     var isTemplateParamMissing = false; // To check if template param is missing.
-    var templateParamMissing = []; // Stores missing template params.
-    var isHeaderParamMissing = false; // To check if header param is missing.
-    var headerParamMissing = []; // Stores missing header params.
-    var isQueryParamMissing = false; // To check if query param is missing.
-    var queryParamMissing = []; // Stores missing query params.
-    var requestEditor; // A Prism editor for method's request.
-    var responseEditor; // A Prism editor for method's response.
-    var oauth2Credentials = {}; // Holds OAuth 2 credential details.
-    var oauth2PassCredentials = {}; // Holds OAuth 2 Password Grant credentials
+    var templateParamMissing = [];      // Stores missing template params.
+    var isHeaderParamMissing = false;   // To check if header param is missing.
+    var headerParamMissing = [];        // Stores missing header params.
+    var isQueryParamMissing = false;    // To check if query param is missing.
+    var queryParamMissing = [];         // Stores missing query params.
+    var requestEditor;                  // A Prism editor for method's request.
+    var responseEditor;                 // A Prism editor for method's response.
+    var oauth2Credentials = {};         // Holds OAuth 2 credential details.
+    var oauth2PassCredentials = {};     // Holds OAuth 2 Password Grant credentials
     var customTokenObject = {};
     var isCutomTokenShown = false;
     var custemTokenCredentials = "";
-    var selectedAuthScheme = ""; // Holds selected auth scheme name.
+    var selectedAuthScheme = "";        // Holds selected auth scheme name.
     var windowLocation = window.location.href; // Current window URL.
     var apiName = Apigee.APIModel.apiName; // Stores the apiName rendered from template.
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
@@ -547,6 +548,16 @@ Apigee.APIModel.Editor = function() {
     this.handleOAuth2Failure = function() {
         self.showError("Unable to proceed because of missing OAuth configuration.");
     };
+
+    /**
+     * Sends request for token to purina with basic auth.
+     * 
+     *
+     */
+    this.sendPWGTokenRequest = function(data) {
+        var defaultCustomTokenObject = data;
+        console.log(JSON.stringify(data));
+    }
 
     this.renderCustomTokenCredentials = function(data) {
         var defaultCustomTokenObject = data;
@@ -722,10 +733,10 @@ Apigee.APIModel.Editor = function() {
             }
             if (authType.indexOf("OAuth 2 Password Grant") != -1) { // Show password grant info
                 if (authType.indexOf(",") == -1) {
-                    sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"oauth2pass";
-                    selectedAuthScheme = "oauth2pass";
+                    sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"passwordgrant";
+                    selectedAuthScheme = "passwordgrant";
                 }
-                var authCredentials = "";
+                var passwordGrantCredentials = "";
                 if (localStorage.apisOAuth2PassCredentialsDetails) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -736,27 +747,28 @@ Apigee.APIModel.Editor = function() {
                     if (dtDiff > 30) {
                         localStorage.removeItem("apisOAuth2PassCredentialsDetails");
                     } else {
-                        authCredentials = localStorage.apisOAuth2PassCredentialsDetails;
+                        passwordGrantCredentials = localStorage.apisOAuth2PassCredentialsDetails;
                     }
                 } else if (sessionStorage.apisOAuth2PassCredentialsDetails) {
-                        authCredentials = sessionStorage.apisOAuth2PassCredentialsDetails;
+                        passwordGrantCredentials = sessionStorage.apisOAuth2PassCredentialsDetails;
                 }
-                if (authCredentials !== "") {
-                    // Format of the apisBasicAuthDetails - api name@@@revision number@@@oauth 2 details.
-                    if (apiName == authCredentials.split("@@@")[0]) {
-                        oauth2PassCredentials = jQuery.parseJSON(authCredentials.split("@@@")[1]);
-                        var selected = (apiName == authCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "oauth2pass") ? "selected" : "";
+                if (passwordGrantCredentials !== "") {
+                    // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
+                    if (apiName == passwordGrantCredentials.split("@@@")[0]) {
+                        oauth2PassCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
+                        var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
-                            jQuery("[data-role='oauth2pass_container']").addClass(selected);
+                            jQuery("[data-role='passwordgrant_container']").addClass(selected);
                         }
-                        jQuery("[data-role='oauth2pass_container']").find(".link_open_oauth2pass").html("Authenticated");
-                        jQuery("[data-role='oauth2pass_container']").find(".icon-remove").css('display','inline-block');
+                        jQuery("[data-role='passwordgrant_container']").find(".link_open_passwordgrant").html("Authenticated");
+                        jQuery("[data-role='passwordgrant_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='oauth2pass_container']").show();
+                jQuery("[data-role='passwordgrant_container']").show();
 
 
-                // TODO: Add new ROPC grant for display / past recall
+                // TODO: TEST above password grant
+
             }
 
 
@@ -832,7 +844,8 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         }
-        // TODO: add new ROPC grant
+        // TODO: add new ROPC grant (?)
+        ///TODO: make it such that i can either set basic auth as my authentication or generate token (2 buttons on basic auth button) or just one button that offers options
     };
     this.getCustomTokenCredentials = function() {
         if (!isCutomTokenShown) {
@@ -1081,21 +1094,22 @@ Apigee.APIModel.Editor = function() {
                 }
                 headersList.push({"name" : "Authorization", "value" : basicAuth});
             }
-        } else { // Add OAuth 2 details in send request proxy API call.
-            if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {
-                if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
-                    var credentialObj = jQuery.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
-                    if (credentialObj.accessToken != oauth2Credentials.accessToken) {
-                        oauth2Credentials = credentialObj
-                    }
+        } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
+            if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
+                var credentialObj = jQuery.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
+                if (credentialObj.accessToken != oauth2Credentials.accessToken) {
+                    oauth2Credentials = credentialObj;
                 }
-                if (oauth2Credentials.accessTokenType == "query") { // Add OAuth 2 details in the query param.
-                    var paramName = (oauth2Credentials.accessToeknParamName == "") ? "oauth_token" : oauth2Credentials.accessToeknParamName;
-                    var separator = (queryParamString == "") ? "?"  : "&";
-                    urlToTest += separator + paramName +"=" + oauth2Credentials.accessToken;
-                } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
-                    headersList.push({"name" : "Authorization", "value" : "Bearer "+oauth2Credentials.accessToken});
-                }
+            } else if (oauth2Credentials.accessTokenType == "query") { // Add OAuth 2 details in the query param.
+                var paramName = (oauth2Credentials.accessToeknParamName == "") ? "oauth_token" : oauth2Credentials.accessToeknParamName;
+                var separator = (queryParamString == "") ? "?"  : "&";
+                urlToTest += separator + paramName +"=" + oauth2Credentials.accessToken;
+            } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
+                headersList.push({"name" : "Authorization", "value" : "Bearer "+oauth2Credentials.accessToken});
+            }
+        } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
+            if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
+                headersList.push({"name" : "Authorization", "value" : passwordGrantCredentials.accessToken});
             }
         }
 
@@ -1410,6 +1424,7 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
             isCutomTokenShown = false;
         }
+        // TODO: add password grant to this
 
         Apigee.APIModel.initMethodsAuthDialogsEvents(); // Re initialize events after the change.
     };
@@ -2139,4 +2154,4 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         self.showError("Error saving changes.");
     };
 };
-Apigee.APIModel.InlineEdit.prototype = new Apigee.APIModel.Common();
+Apigee.APIModel.InlineEdit.prototype = new Apigee.APIModel.Common(); 
