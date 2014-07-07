@@ -73,12 +73,13 @@ Apigee.APIModel.initMethodsAuthDialogsEvents = function() {
     jQuery("[data-role='oauth2_modal']").find(".button_save_modal").unbind("click").click(apiModelMethods.saveAuthModal);
     jQuery("[data-role='custom_token_modal']").find(".button_close_modal").unbind("click").click(apiModelCommon.closeAuthModal);
     jQuery("[data-role='custom_token_modal']").find(".button_save_modal").unbind("click").click(apiModelMethods.saveAuthModal);
-    jQuery("[data-role='passwordgrant_modal']").find(".button_close_modal").unbind("click").click(apiModelCommon.closeAuthModal);
-    jQuery("[data-role='passwordgrant_modal']").find(".button_save_modal").unbind("click").click(apiModelMethods.saveAuthModal);
-    jQuery("[data-role='passwordgrant_modal']").find(".button_token_request_modal").unbind("click").click(apiModelMethods.sendPWGTokenRequest)
+    jQuery("[data-role='password_grant_modal']").find(".button_close_modal").unbind("click").click(apiModelCommon.closeAuthModal);
+    jQuery("[data-role='password_grant_modal']").find(".button_save_modal").unbind("click").click(apiModelMethods.saveAuthModal);
+    jQuery("[data-role='password_grant_modal']").find(".button_token_request_modal").unbind("click").click(apiModelMethods.sendPWGTokenRequest)
     jQuery("[data-role='basic_auth_container'] .icon-remove").unbind("click").click("basicauth",apiModelMethods.clearSessionStorage);
     jQuery("[data-role='oauth2_container'] .icon-remove").unbind("click").click("oauth2",apiModelMethods.clearSessionStorage);
     jQuery("[data-role='custom_token_container'] .icon-remove").unbind("click").click("customtoken",apiModelMethods.clearSessionStorage);
+    jQuery("[data-role='password_grant_container'] .icon-remove").unbind("click").click("passwordgrant",apiModelMethods.clearSessionStorage);
     jQuery(".authentication .well").unbind("click").click(apiModelMethods.toggleAuthScheme);
     jQuery("#modal_container.modal input").keyup(function(e){
         jQuery(this).removeClass("error");
@@ -152,7 +153,7 @@ Apigee.APIModel.inlineEditPageEvents = function() {
 
 }
 /**
- * Called after successful oAuth 2 dance.
+ * Called after successful OAuth 2 dance.
  * Constructs JSON object and calls the 'Apigee.APIModel.Details' class setOAuth2Credentials method.
  */
 setAccessTokenAndLocation = function(errorCode, errorMessage, accessToken, accessTokenType , accessToeknParamName, proxyURL) {

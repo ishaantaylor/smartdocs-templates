@@ -366,7 +366,7 @@
     margin: 4px 0 0;
     padding: 4px;
     float: left;
-    display:block;
+    display:none;
 }
 #method_content .operation_container .authentication .well.selected, #method_content .operation_container .authentication .well:hover {
     box-shadow: 0 0 3px 3px #2182AF;

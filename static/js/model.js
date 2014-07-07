@@ -685,7 +685,7 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='basic_auth_container']").show();
             }
-            if (authType.indexOf("OAuth 2") != -1) { // Show OAuth 2 info in the operation container.
+            else if (authType.indexOf("OAuth 2") != -1) { // Show OAuth 2 info in the operation container.
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"oauth2";
                     selectedAuthScheme = "oauth2";
@@ -720,7 +720,7 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='oauth2_container']").show();
             }
-            if (authType.indexOf("Custom Token") != -1) { // Show Custom token info in the operation container.
+            else if (authType.indexOf("Custom Token") != -1) { // Show Custom token info in the operation container.
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"customtoken";
                     selectedAuthScheme = "customtoken";
@@ -741,13 +741,13 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='custom_token_container']").show();
             }
-            if (authType.indexOf("Password Grant") != -1) { // Show password grant info
+            else if (authType.indexOf("Password Grant") != -1) {  // Show password grant info
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"passwordgrant";
                     selectedAuthScheme = "passwordgrant";
                 }
-                var passwordGrantCredentials = "";
-                if (localStorage.apisOAuth2PassCredentialsDetails) {
+                // var passwordGrantCredentials = "";
+                if (localStorage.apisPasswordGrantCredentials) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
                     var lsTimeStamp  = localStorage.apisOAuth2CredentialsDetails.split("@@@")[2];
@@ -755,12 +755,12 @@ Apigee.APIModel.Editor = function() {
                     var dtDiff = currentTimeStamp-lsTimeStamp;
                     var dtDiff = parseInt(self.dateDiff(new Date(currentTimeStamp),new Date(lsTimeStamp)));
                     if (dtDiff > 30) {
-                        localStorage.removeItem("apisOAuth2PassCredentialsDetails");
+                        localStorage.removeItem("apisPasswordGrantCredentials");
                     } else {
-                        passwordGrantCredentials = localStorage.apisOAuth2PassCredentialsDetails;
+                        passwordGrantCredentials = localStorage.apisPasswordGrantCredentials;
                     }
-                } else if (sessionStorage.apisOAuth2PassCredentialsDetails) {
-                        passwordGrantCredentials = sessionStorage.apisOAuth2PassCredentialsDetails;
+                } else if (sessionStorage.apisPasswordGrantCredentials) {
+                        passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
                 }
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
@@ -768,13 +768,13 @@ Apigee.APIModel.Editor = function() {
                         passwordGrantCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
                         var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
-                            jQuery("[data-role='passwordgrant_container']").addClass(selected);
+                            jQuery("[data-role='password_grant_container']").addClass(selected);
                         }
-                        jQuery("[data-role='passwordgrant_container']").find(".link_open_passwordgrant").html("Authenticated");
-                        jQuery("[data-role='passwordgrant_container']").find(".icon-remove").css('display','inline-block');
+                        jQuery("[data-role='password_grant_container']").find(".link_open_passwordgrant").html("Authenticated");
+                        jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='passwordgrant_container']").show();
+                jQuery("[data-role='password_grant_container']").show();
 
 
                 // TODO: TEST above password grant
@@ -853,13 +853,15 @@ Apigee.APIModel.Editor = function() {
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "customtoken"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
-        } else if (parentClass.attr('data-role') == 'password_grant_modal') {
+        } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
 
             var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";
             self.makeAJAXCall({"url":passwordGrantURL, dataType:"json", "callback":self.renderCallbackURL, "errorCallback":self.handleOAuth2Failure})
             
+            var authHeader = "Bearer " + passwordGrantCredentials; /*.accessToken*/
+
             sessionStorage.apisBasicAuthDetails = apiName + "@@@" + userEmail + "@@@" + basicAuth;  // Store basic auth info in local storage with time stamp.
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "basicauth"; // Store seleted auth scheme info in session storage.
+            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
 
             // TODO: add new ROPC grant (?) for password_grant_modal
         }
@@ -1130,7 +1132,10 @@ Apigee.APIModel.Editor = function() {
 
                 // TODO: Add OAuth token to request ( password grant token generated by purina !! )
         } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
-            if (localStorage.apisOAuth2PassCredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
+
+                // TODO: Add OAuth token to request ( password grant token generated by purina !! )
+
+            if (localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
                 self.makeAJAXCall({"url":oauth2Url+"/authschemes/oauth2webserverflow/authUrl",dataType:"json", "callback":self.renderCallbackURL, "errorCallback" :self.handleOAuth2Failure});
 
@@ -1377,7 +1382,7 @@ Apigee.APIModel.Editor = function() {
                 break;
             case "password_grant_modal":
             case "passwordgrant_modal":
-                localStorageVariable = "apisOAuth2PassCredentialsDetails";
+                localStorageVariable = "apisPasswordGrantCredentials";
                 break;
             default:
                 localStorageVariable = "apisOAuth2CredentialsDetails";
@@ -1477,7 +1482,7 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
 /**
  * This class handles operation page inline edit related functionalities.
  */
- Apigee.APIModel.InlineEdit = function() {
+Apigee.APIModel.InlineEdit = function() {
     // Private properties
     var self = this; // Keep a reference of the current class when the context of 'this' is changing.
     var editMode = 0; // Holds the edit mode value
@@ -1716,7 +1721,7 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
      */
     this.saveAuthModal = function() {
-        var errMessage = self.validate
+        var errMessage = self.validate;
         Fields('edit_auth_modal');
         if (errMessage == "") {
             var windowLocation = window.location.href;
