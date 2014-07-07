@@ -65,8 +65,7 @@ Apigee.APIModel.initMethodsAuthDialogsEvents = function() {
         jQuery("[data-role='custom_token_modal']").modal('show');
     });
     jQuery("a.link_open_passwordgrant").unbind("click").click(function () {
-        apiModelMethods.updateAuthModalFooter("passwordgrant_modal");
-        
+        apiModelMethods.updateAuthModalFooter("password_grant_modal");
     });
     jQuery("[data-role='basic_auth_modal']").find(".button_close_modal").unbind("click").click(apiModelCommon.closeAuthModal);
     jQuery("[data-role='basic_auth_modal']").find(".button_save_modal").unbind("click").click(apiModelMethods.saveAuthModal);
