@@ -393,6 +393,7 @@ Apigee.APIModel.Editor = function() {
     var methodURLElement;               // Holds the resource URL element.
     var basicAuth = "";                 // Holds basic auth value.
     var passwordGrantCredentials = "";  // Holds password grant token (bearer).
+    var oauth2Credentials = {};         // Holds OAuth 2 credential details.
     var userEmail = "";                 // Holds user email.
     var authType;                       // Holds auth type details.
     var rawCode = "";                   // Stores response content of the testApi call.
@@ -405,8 +406,6 @@ Apigee.APIModel.Editor = function() {
     var queryParamMissing = [];         // Stores missing query params.
     var requestEditor;                  // A Prism editor for method's request.
     var responseEditor;                 // A Prism editor for method's response.
-    var oauth2Credentials = {};         // Holds OAuth 2 credential details.
-    var oauth2PassCredentials = {};     // Holds OAuth 2 Password Grant credentials
     var customTokenObject = {};
     var isCutomTokenShown = false;
     var custemTokenCredentials = "";
@@ -531,7 +530,7 @@ Apigee.APIModel.Editor = function() {
      * @param {Object} data - response content of OAuth2 web serser auth URL AJAX call.
      * @return {Void} opens a new window to make OAuth dance.
      */
-    this.renderCallbackURL= function(data) {
+    this.renderCallbackURL = function(data) {
         if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
             var oauth2AuthUrlPart1 = data.authUrl.split("redirect_uri=")[0];
             var oauth2AuthUrlPart2 = data.authUrl.split("redirect_uri=")[1];
@@ -541,6 +540,17 @@ Apigee.APIModel.Editor = function() {
             window.open(data.authUrl, "oauth2Window", "resizable=yes,scrollbars=yes,status=1,toolbar=1,height=500,width=500");
         }
     };
+
+// TODO: figure out if i have to write custom request callback method to get the token from the ajax call and put it in the passwordgrant_modal - i do
+    /**
+     *  Handles success of (AJAX call) password grant authentication initial basic auth token request 
+     *  @param {object} data - response content from Purina
+     *  @return {Void} puts token into html component in password grant modal
+     */
+    this.handlePWGSuccess = function(data) {
+        jQuery("[data-role='passwordgrant_modal'").find("inToken").html(data.accessToken);
+    }
+
     /**
      * Error callback method of a OAuth2 web serser auth URL AJAX call.
      * @return {Void} shows error message to the User.
@@ -731,7 +741,7 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='custom_token_container']").show();
             }
-            if (authType.indexOf("OAuth 2 Password Grant") != -1) { // Show password grant info
+            if (authType.indexOf("Password Grant") != -1) { // Show password grant info
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"passwordgrant";
                     selectedAuthScheme = "passwordgrant";
@@ -755,7 +765,7 @@ Apigee.APIModel.Editor = function() {
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
                     if (apiName == passwordGrantCredentials.split("@@@")[0]) {
-                        oauth2PassCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
+                        passwordGrantCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
                         var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
                             jQuery("[data-role='passwordgrant_container']").addClass(selected);
@@ -792,10 +802,10 @@ Apigee.APIModel.Editor = function() {
         }
         $currentElement.addClass('selected');
     };
+
     /**
      * The method handles saving basic auth details/displays error, when user clicks 'Save' button in the Basic Auth pop-up dialog.
      */
-
     this.saveAuthModal = function(e) {
         var parentClass = jQuery(this).parents(".modal");
         if (parentClass.attr('data-role') == 'basic_auth_modal') {
@@ -843,8 +853,13 @@ Apigee.APIModel.Editor = function() {
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "customtoken"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
+        } else if (parentClass.attr('data-role') == 'password_grant_modal') {
+
+            var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";
+            self.makeAJAXCall({"url":passwordGrantURL, dataType:"json", "callback":self.renderCallbackURL, "errorCallback":self.handleOAuth2Failure})
+
+            // TODO: add new ROPC grant (?) for password_grant_modal
         }
-        // TODO: add new ROPC grant (?)
         ///TODO: make it such that i can either set basic auth as my authentication or generate token (2 buttons on basic auth button) or just one button that offers options
     };
     this.getCustomTokenCredentials = function() {
@@ -854,6 +869,7 @@ Apigee.APIModel.Editor = function() {
             isCutomTokenShown = true;
         }
     };
+
     /**
      * The request payload sample/request payload description link click event handler - Show/Hide payload sample content/request payload sample content, based on the link.
      */
@@ -881,6 +897,7 @@ Apigee.APIModel.Editor = function() {
             }
         }
     };
+
     /**
      * Click event handler for the reset link avaiable next to the send request button.
      */
@@ -947,8 +964,8 @@ Apigee.APIModel.Editor = function() {
                 });
                 localStorage.setItem("templateParams",JSON.stringify(templateParamArray)); // Create local storage variable and assign the values.
             }
-
         }
+
         //change the variable name to Target URL.
         var urlToTest = jQuery("[data-role='method_url_container']").text();
         var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
@@ -1006,7 +1023,7 @@ Apigee.APIModel.Editor = function() {
             paramGroups.each(function(i, obj) {
                 var paramGroup = jQuery(this);
                 var maxChoice = (paramGroup.find("[data-role='maxChoice']").length) ? parseInt(paramGroup.find("[data-role='maxChoice']").text()) : paramGroup.find("[data-role='param-group-list']").length;
-                var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0 ;
+                var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0;
                 var counter = 0;
                 var paramGroupMissing = [];
                 if (paramGroup.find("[data-role='param-group-list']").length) {
@@ -1105,15 +1122,18 @@ Apigee.APIModel.Editor = function() {
                 var separator = (queryParamString == "") ? "?"  : "&";
                 urlToTest += separator + paramName +"=" + oauth2Credentials.accessToken;
             } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
-                headersList.push({"name" : "Authorization", "value" : "Bearer "+oauth2Credentials.accessToken});
+                headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
+
+                // TODO: Add OAuth token to request ( password grant token generated by purina !! )
         } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
             if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
-                headersList.push({"name" : "Authorization", "value" : passwordGrantCredentials.accessToken});
+                headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials.accessToken});
+                self.makeAJAXCall({"url":oauth2Url+"/authschemes/oauth2webserverflow/authUrl",dataType:"json", "callback":self.renderCallbackURL, "errorCallback" :self.handleOAuth2Failure});
+
             }
         }
 
-        // TODO: Add OAuth token to request
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
@@ -1123,7 +1143,7 @@ Apigee.APIModel.Editor = function() {
         var processDataValue = true;
         if (jQuery("[data-role='attachments-list']").length || (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='body-param-list']").length)) {
             var multiPartTypes = "";
-            if ( jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9) {
+            if (jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9) {
                 if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
                     self.showUnsupportedAttachementAlertMessage();
                 }
@@ -1146,7 +1166,7 @@ Apigee.APIModel.Editor = function() {
             } else {
                 for (var i=0,l=headersList.length; i<l; i++) {
                     if (headersList[i].name == "Content-Type") {
-                        headersList.splice(i,1)
+                        headersList.splice(i,1);
                     }
                 }
                 if (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='attachments-list']").length) {
@@ -1395,6 +1415,8 @@ Apigee.APIModel.Editor = function() {
         } else if (jQuery(this).hasClass("customtoken")){
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "customtoken";
             selectedAuthScheme = "customtoken";
+        } else if (jQuery(this).hasClass("passwordgrant")) {
+            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant";
         }
 
     };
@@ -1423,8 +1445,11 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='custom_token_container']").find(".link_open_customtoken").html("Set...").attr('title','Set custom token credentials.');
             jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
             isCutomTokenShown = false;
+        } else if (type == "passwordgrant") {         // TODO: add password grant to this
+
+            sessionStorage.removeItem('');
+
         }
-        // TODO: add password grant to this
 
         Apigee.APIModel.initMethodsAuthDialogsEvents(); // Re initialize events after the change.
     };
@@ -1641,6 +1666,8 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
             }
         }
     }
+
+
     function checkAdminCredentials() {
         if (localStorage.orgAdminBasicAuthDetails) {
             jQuery("[data-role='edit_auth_modal']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials for 30 days.');
@@ -1671,7 +1698,8 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
      */
     this.saveAuthModal = function() {
-        var errMessage = self.validateBasicAuthFields('edit_auth_modal');
+        var errMessage = self.validate
+        Fields('edit_auth_modal');
         if (errMessage == "") {
             var windowLocation = window.location.href;
             var dataObj = "password="+ jQuery.trim(jQuery("[data-role='edit_auth_modal']").find("#inputPassword").val());
@@ -1938,10 +1966,12 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             lastEditScope = "resource";
             operationPath = operationPath.split("/methods/")[0];
             if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
+                // operationPath = Drupal.settings.devconnect_docgen.apiModelBaseUrl + "/v1/" + Apigee.APIModel.organizationName + "/apimodels/"+ Apigee.APIModel.apiName+"/revisions/"+ Apigee.APIModel.revisionNumber+"/resources/"+ Apigee.APIModel.resourceId;
                 operationPath = Drupal.settings.devconnect_docgen.apiModelBaseUrl + "/v1/o/" + Apigee.APIModel.organizationName + "/apimodels/"+ Apigee.APIModel.apiName+"/revisions/"+ Apigee.APIModel.revisionNumber+"/resources/"+ Apigee.APIModel.resourceId;
             }
             if (Apigee.APIModel.apiModelBaseUrl) {
-                operationPath = Apigee.APIModel.apiModelBaseUrl + "/v1/o/" + Apigee.APIModel.organizationName + "/apimodels/"+ Apigee.APIModel.apiName+"/revisions/"+ Apigee.APIModel.revisionNumber+"/resources/"+ Apigee.APIModel.resourceId;
+                operationPath = "/v1/" + Apigee.APIModel.organizationName + "/apimodels/"+ Apigee.APIModel.apiName+"/revisions/"+ Apigee.APIModel.revisionNumber+"/resources/"+ Apigee.APIModel.resourceId;
+                operationPath = Apigee.APIModel.apiModelBaseUrl + "/v1/" + Apigee.APIModel.organizationName + "/apimodels/"+ Apigee.APIModel.apiName+"/revisions/"+ Apigee.APIModel.revisionNumber+"/resources/"+ Apigee.APIModel.resourceId;
             }
 
             // Resource level params Header, Query, Template params contruction.

@@ -125,10 +125,10 @@
                                 <i title="Clear admin credentials." class="icon-remove"></i>
                             </div>
                         </div>
-                        <div class="well oauth2pass" data-role="oauth2pass_container">
-                            <p class="title">OAuth 2</p>
+                        <div class="well passwordgrant" data-role="password_grant_container" style="display:block">
+                            <p class="title">Password Grant</p>
                             <div class="details">
-                                <a data-toggle="modal" role="button" href="#oauth2pass_modal" title="Set credentials." class="link_open_oauth2">Set...</a>
+                                <a data-toggle="modal" role="button" href="#passwordgrant_modal" title="Set credentials." class="link_open_passwordgrant">Set...</a>
                                 <i title="Clear admin credentials." class="icon-remove"></i>
                             </div>
                         </div>
@@ -226,6 +226,43 @@
         <!-- /.modal-dialog -->
     </div>
     <!-- /.modal -->
+    <!-- Password Grant Token Generation modal -->
+    <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" id="modal_container" data-role="password_grant_modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close button_close_modal" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title">Set Authentication</h3>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <div class="error_container"></div>
+                        <div class="form-group">
+                            <label class="control-label" for="inputEmail">Email</label>
+                            <input class="form-control" type="text" id="inEmail" placeholder="Email"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="inputPassword">Password</label>
+                            <input class="form-control" type="password" id="inPassword" placeholder="Password"/>
+                        </div>
+                        <div class="content">
+                            <label class="content" data-dismiss="modal" aria-hidden="true">Token: </label>
+                            <input class="form-control" type="text" id="inToken" placeholder="Password"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <p>Your credentials will not be saved.</p>
+                    <a class="btn btn-primary button_token_request_modal" href="javascript:void(0)">Send Request for Token</a>
+                    <a class="button_close_modal" href="javascript:void(0)">Cancel</a>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /modal -->
+
     <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" id="modal_container" data-role="custom_token_modal">
         <div class="modal-dialog">
             <div class="modal-content">
