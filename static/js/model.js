@@ -550,14 +550,40 @@ Apigee.APIModel.Editor = function() {
      *  @return {Void}  puts token into html component in password grant modal
      */
     this.handlePWG = function() {
-        alert(accessToken);
+        console.log("553");
 
-        // make request to purina
+        // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
+            // make an ajax call to get the token
+            var email = $("[data-role='password_grant_modal']").find("inEmail");
+            console.log(email);
+            var inputData = "grant_type=password&username=" + email + "&password=";
 
-        // parse access token from response
+        if (true /* valid password && valid username (valid doesnt mean authenticated)*/) {
+            $.ajax({
+                url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
+                type: 'POST',
+                data: inputData + $("inPassword"),
+                contentType: 'application/x-www-form-urlencoded',
+                success: function (data, textStatus, jqXHR) {
+                    // success handler must place token into session storage
+                    console.log(data);
+                    console.log(textStatus);
+                    console.log(jqXHR);
+                    // $("[data-role='password_grant_modal']").find("inToken").html(data.accessToken);
+
+                },
+                error: function (xhr, status, error) { 
+                    // error handler
+                    console.log(status);
+                    console.log(error);
+                },
+            });
+        }
+
+
+        // parse access token from response 
 
         // place into html component in pw grant modal
-        jQuery("[data-role='passwordgrant_modal'").find("inToken").html(data.accessToken);
     }
 
     /**
