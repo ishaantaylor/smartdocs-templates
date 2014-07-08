@@ -553,24 +553,21 @@ Apigee.APIModel.Editor = function() {
         // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
             // make an ajax call to get the token
             var email = $("#inEmail")[0].value;
-            console.log(email);
-            var inputData = "grant_type=password&username=" + "itaylor@apigee.com" + "&password=" + "testTest05";  // TODO: Change from hardcoded
+            var inputData = "grant_type=password&username=" + email + "&password=";
 
         if (true /* TODO: valid password && valid username (valid doesnt mean authenticated)*/) {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
-                data: inputData /* TODO: put this back :: + $("#inPassword")[0].value */,
+                data: inputData + $("#inPassword")[0].value,
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
-                    // success handler must place token into session storage OR...OR in its value then the saveAuthModal can do the rest of the work
-                    console.log(data.access_token);
-
                     // console.log(textStatus);
                     // console.log(jqXHR);
-                    $("#inToken").val(data.accessToken);        // TODO: fix this part. it should pust the token value into the html place
+                    $("#inToken").val(data.access_token);        // TODO: fix this part. it should pust the token value into the html place
                     $("#inPassword").val("");
                     $("#inEmail").val("");
+
                 },
                 error: function (jqXHR, status, error) { 
                     // TODO: make this such that if theres an error it will just say it on the modal
