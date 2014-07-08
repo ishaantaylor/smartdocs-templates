@@ -550,38 +550,42 @@ Apigee.APIModel.Editor = function() {
      *  @return {Void}  puts token into html component in password grant modal
      */
     this.handlePWG = function() {
-        console.log("553");
-
         // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
             // make an ajax call to get the token
-            var email = $("[data-role='password_grant_modal']").find("inEmail");
+            var email = $("#inEmail")[0].value;
             console.log(email);
-            var inputData = "grant_type=password&username=" + email + "&password=";
+            var inputData = "grant_type=password&username=" + "itaylor@apigee.com" + "&password=" + "testTest05";  // TODO: Change from hardcoded
 
-        if (true /* valid password && valid username (valid doesnt mean authenticated)*/) {
+        if (true /* TODO: valid password && valid username (valid doesnt mean authenticated)*/) {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
-                data: inputData + $("inPassword"),
+                data: inputData /* TODO: put this back :: + $("#inPassword")[0].value */,
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
-                    // success handler must place token into session storage
-                    console.log(data);
-                    console.log(textStatus);
-                    console.log(jqXHR);
-                    // $("[data-role='password_grant_modal']").find("inToken").html(data.accessToken);
+                    // success handler must place token into session storage OR...OR in its value then the saveAuthModal can do the rest of the work
+                    console.log(data.access_token);
 
+                    // console.log(textStatus);
+                    // console.log(jqXHR);
+                    $("#inToken").val(data.accessToken);        // TODO: fix this part. it should pust the token value into the html place
+                    $("#inPassword").val("");
+                    $("#inEmail").val("");
                 },
-                error: function (xhr, status, error) { 
+                error: function (jqXHR, status, error) { 
+                    // TODO: make this such that if theres an error it will just say it on the modal
+
+                    // self.showError(jqXHR.error_description);
                     // error handler
-                    console.log(status);
-                    console.log(error);
+                    // console.log(status);
+                    // console.log(error);
+                    // console.log(jqXHR.responseText);
+                    // console.log(jqXHR.getAllResponseHeaders());
+
                 },
             });
         }
 
-
-        // parse access token from response 
 
         // place into html component in pw grant modal
     }
@@ -879,15 +883,21 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-
+            
             // TODO: write function that validates the basic auth fields  -->  i dont think i actualy have to do this, see below comment
+
+
+
             // TODO: write function that saves the bearer token to local / session storage - throw error if no token only
             var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var authHeader = "Bearer " + passwordGrantCredentials; /*.accessToken*/
 
-            sessionStorage.apisBasicAuthDetails = apiName + "@@@" + userEmail + "@@@" + basicAuth;  // Store basic auth info in local storage with time stamp.
+            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;  // TODO: check if it needs bearer in front 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
+
+            self.updateAuthContainer();
+            self.closeAuthModal(); 
 
             // TODO: add new ROPC grant (?) for password_grant_modal
         }
