@@ -420,6 +420,8 @@ Apigee.APIModel.Methods = function() {
     var customTokenObject = {};
     var isCutomTokenShown = false;
     var custemTokenCredentials = "";
+    var rememberCheckbox = false;
+
     var selectedAuthScheme = "";        // Holds selected auth scheme name.
     var windowLocation = window.location.href; // Current window URL.
     var apiName = Apigee.APIModel.apiName; // Stores the apiName rendered from template.
@@ -589,8 +591,9 @@ Apigee.APIModel.Methods = function() {
                 success: function (data, textStatus, jqXHR) {
                     // console.log(textStatus);
                     // console.log(jqXHR);
-                    passwordGrantCredentials = data.access_token;  
-                    $("#inToken").val(passwordGrantCredentials); 
+                    // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
+                    
+                    $("#inToken").val(data.access_token);
                     $("#inPassword").val("");
                     $("#inEmail").val("");
 
@@ -693,7 +696,6 @@ Apigee.APIModel.Methods = function() {
         if (authType.indexOf("No auth") != -1) {
             $("[data-role='authentication_container']").css({'visibility':'hidden'});
             $(".icon_lock").css({'visibility':'hidden'});
-            
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -818,6 +820,7 @@ Apigee.APIModel.Methods = function() {
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
                     if (apiName == passwordGrantCredentials.split("@@@")[0]) {
+                        console.log("passwordGrantCredentials: " + passwordGrantCredentials);
                         passwordGrantCredentials = $.parseJSON(passwordGrantCredentials.split("@@@")[1]);
                         var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
@@ -912,15 +915,11 @@ Apigee.APIModel.Methods = function() {
             // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var access_token = $("#inToken")[0].value;
-            console.log("#inToken: " + access_token);
-            if (!access_token)
-                showError("Please generate your token.");
             
             // TODO: implement: if (remember_checkbox) save token locally
 
-            passwordGrantCredentials = access_token;
             /* closing dance */
-            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;
+            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer" + access_token;
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "passwordgrant";
@@ -1222,6 +1221,8 @@ Apigee.APIModel.Methods = function() {
 
             if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
+                if ()
+                passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
