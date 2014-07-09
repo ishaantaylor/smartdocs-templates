@@ -424,60 +424,75 @@ Apigee.APIModel.Editor = function() {
      */
     this.init = function() {
         // Convert the auth type value as user friendly text.
-        var authTypeElement = jQuery("[data-role='auth-type']");
-        authType = jQuery.trim(authTypeElement.text());
+        var authTypeElement = $("[data-role='auth-type']");
+        authType = $.trim(authTypeElement.text());
+        console.log("@ 429 authType: " + authType);
         if (authType.split(",").length > 1) {
             authType = authType.substr(0,authType.length-1); // Remove the last extra comma symbol.
         }
-        authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","OAuth 2 Password Grant").replace("PASSWORDGRANT", "OAuth 2 Password Grant").replace("NOAUTH","No auth");
+        authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","Password Grant").replace("PASSWORDGRANT", "Password Grant").replace("NOAUTH","No auth");
+
+        console.log("@ 429 authType: " + authType);
 
         authTypeElement.html(authType); // Update the auth type HTML element.
+
         self.updateAuthContainer();
         //Fix for extraneous space in the resource URL.
         var resourceURLString = "";
-        jQuery("[data-role='method_url_container'] span").each(function() {
-            resourceURLString += '<span data-role="'+ jQuery(this).attr('data-role') + '">' +jQuery(this).html() + '</span>';
+        $("[data-role='method_url_container'] span").each(function() {
+            resourceURLString += '<span data-role="'+ $(this).attr('data-role') + '">' +$(this).html() + '</span>';
         });
-        jQuery("[data-role='method_url_container']").html(resourceURLString);
+
+        console.log("@ 446 resourceURLString: " + resourceURLString);
+
+        $("[data-role='method_url_container']").html(resourceURLString);
         // Template parameter releated changes.
-        methodURLElement = jQuery("[data-role='method_url_container']");
+        methodURLElement = $("[data-role='method_url_container']");
         // Add tooltip to template params.
+
+        console.log("@ 453 methodURLElement[0].value: " + methodURLElement[0].value);
 
         methodURLElement.html(methodURLElement.html().replace(/\{/g,"<span data-toggle='tooltip' data-original-title=''><span class='template_param' contenteditable='true'>{").replace(/\}/g,"}</span><span></span></span>"));
 
+        console.log("@ 457 methodURLElement[0].value: " + methodURLElement[0].value);
+
         methodURLElement.find("span.template_param").each(function() {
-            jQuery(this).siblings("span").attr("data-role",jQuery(this).text());
+            $(this).siblings("span").attr("data-role",$(this).text());
         });
+
+        console.log("@ 463 methodURLElement[0].value: " + methodURLElement[0].value);
+
         // Create a sibling node to each template param and add original value to the siblings.
         // Original value will be used while validating template params.
-        jQuery("[data-role='template-params']").find("p").each(function() {
-            var templateParamName = jQuery(this).find("[data-role='name']").html();
-            var templateParamDescription = jQuery(this).find("[data-role='description']").html();
-            jQuery("[data-toggle='tooltip']").each(function() {
-                var curElement = jQuery(this).find("span:eq(1)").data("role");
+        $("[data-role='template-params']").find("p").each(function() {
+            var templateParamName = $(this).find("[data-role='name']").html();
+            var templateParamDescription = $(this).find("[data-role='description']").html();
+            $("[data-toggle='tooltip']").each(function() {
+                var curElement = $(this).find("span:eq(1)").data("role");
                 if (curElement) {
                     curElement = curElement.substring(1,curElement.length-1);
                     if (curElement == templateParamName) {
-                        templateParamDescription = jQuery.trim(templateParamDescription);
+                        templateParamDescription = $.trim(templateParamDescription);
                         if (templateParamDescription.charAt(templateParamDescription.length-1) != ".") {
                             templateParamDescription += ".";
                         }
-                        jQuery(this).attr('data-original-title',templateParamDescription+" Click to edit the value.");
+                        $(this).attr('data-original-title',templateParamDescription+" Click to edit the value.");
                     }
                 }
             });
         });
+
         // Replace template param values with the values stored in local storage.
         if (localStorage.hasOwnProperty('templateParams')) {
             var templateParams = JSON.parse(localStorage.getItem('templateParams'));
             for (var i=0; i<templateParams.length; i++) {
                 var paramName = templateParams[i].name;
                 var paramValue = templateParams[i].value;
-                jQuery("[data-role='method_url_container'] span.template_param").each(function() {
-                    var spanElement = jQuery(this).siblings("span");
-                    var inputElement = jQuery(this);
+                $("[data-role='method_url_container'] span.template_param").each(function() {
+                    var spanElement = $(this).siblings("span");
+                    var inputElement = $(this);
                     if(spanElement.attr('data-role') == paramName) {
-                        inputElement.text(jQuery.trim(paramValue));
+                        inputElement.text($.trim(paramValue));
                     }
                 });
             }
@@ -512,6 +527,8 @@ Apigee.APIModel.Editor = function() {
         if (Apigee.APIModel.apiModelBaseUrl) {
             proxyURLLocation = Apigee.APIModel.apiModelBaseUrl +"/v1/o/" + Apigee.APIModel.organizationName;
         }
+
+        // TODO: rewrite this i think..
         proxyURLLocation = proxyURLLocation + "/apimodels/proxyUrl"; // Proxy URL location format: https://<domain name>/<alpha/beta/v1>/o/apihub/apimodels/proxyUrl
         self.makeAJAXCall({"url":proxyURLLocation, "callback":self.storeProxyURL}); // Make an AJAX call to retrieve proxy URL to make send request call.
         Apigee.APIModel.initMethodsPageEvents();
@@ -620,9 +637,11 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='custom_token_modal']").find("[data-role='query']").attr('checked','checked');
         }
     };
+
     this.handleCustomTokenFailure = function() {
         self.showError("Unable to proceed because of missing Custom token configuration.");
     };
+
     /**
      * Update template param width based on number of charecter.
      * @param {HTML Element} element - Template parameter input element.
@@ -642,6 +661,7 @@ Apigee.APIModel.Editor = function() {
             element.css('width','auto');
         }
     };
+
     this.updateTemplateParamText= function(element) {
         var value = element.text();
         var size  = value.length;
@@ -655,6 +675,7 @@ Apigee.APIModel.Editor = function() {
             }
         }
     };
+
     /**
      * This method updates the authentication container based on the auth type value to make Send request AJAX call.
      * @return {Void} updates the authentication container.
@@ -880,7 +901,7 @@ Apigee.APIModel.Editor = function() {
             
 
 
-            var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
+            // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var access_token = $("#inToken")[0].value;
             if (!access_token)
@@ -890,15 +911,15 @@ Apigee.APIModel.Editor = function() {
 
             /* closing dance */
             sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + authHeader;  // TODO: check if it needs bearer in front 
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
-            self.updateAuthContainer();
-            selectedAuthScheme = "passwordgrant";
             self.closeAuthModal(); 
+            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
+            selectedAuthScheme = "passwordgrant";
+            self.updateAuthContainer();
 
-            // TODO: add new ROPC grant (?) for password_grant_modal
+            // TODO: add new ROPC grant (?) for password_grant_modal --> test this now
         }
-        ///TODO: make it such that i can either set basic auth as my authentication or generate token (2 buttons on basic auth button) or just one button that offers options
     };
+
     this.getCustomTokenCredentials = function() {
         if (!isCutomTokenShown) {
             windowLocation = windowLocation.split("/resources/")[0];
@@ -1172,12 +1193,12 @@ Apigee.APIModel.Editor = function() {
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1";
         } 
 
-        console.log("@ 1175: " + urlToTest);
+        console.log("@ 1196: " + urlToTest);
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-        console.log("@ 1178: " + urlToTest);
+        console.log("@ 1199: " + urlToTest);
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-        console.log("@ 1180: " + urlToTest);
+        console.log("@ 1201: " + urlToTest);
 
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
@@ -1385,6 +1406,7 @@ Apigee.APIModel.Editor = function() {
         }
         Prism.highlightAll(); // Update the Prism editor.
     };
+
     /**
      * This method clears the error container and it's related arrays and variable.
      */
@@ -1393,6 +1415,7 @@ Apigee.APIModel.Editor = function() {
         self.clearMissingArray();
         jQuery("[data-role='error_container']").hide().html("");
     };
+
     /**
      * This method clears the params variable.
      */
@@ -1402,6 +1425,7 @@ Apigee.APIModel.Editor = function() {
         isQueryParamMissing = false;
         isRequestBodyMissing = false;
     };
+
     /**
      * This method clears the params array.
      */
@@ -1411,6 +1435,7 @@ Apigee.APIModel.Editor = function() {
         queryParamMissing = [];
         requestBodyMissing = "";
     };
+    
     this.updateAuthModalFooter = function(modalClassName) {
         var localStorageVariable;
         switch(modalClassName) {
@@ -1428,9 +1453,9 @@ Apigee.APIModel.Editor = function() {
         console.log(localStorageVariable);
 
         if (localStorage.getItem(localStorageVariable)) {
-            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials for 30 days.');
+            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials or token for 30 days.');
         } else if (!jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p input").length){
-            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials for 30 days.');
+            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials or token for 30 days.');
         }
         jQuery("[data-role='"+modalClassName+"']").modal('show');
     };
