@@ -5,7 +5,7 @@
  * trademarks are the property of their respective owners.
  */
 // This file contains API Modeling docs related class defitions.
-// This file is depends on $, base64 $ plugin.
+// This file is depends on jQuery, base64 jQuery plugin.
 // This file also use bootstrap editor, Codemirror's XML and JSON editor plugin and Prism editor plugin.
 
 /**
@@ -52,13 +52,15 @@ Apigee.APIModel.Common = function() {
         }
         return flag;
     };
-    navigator.sayswho= (function(){
+
+    navigator.sayswho = (function() {
         var N= navigator.appName, ua= navigator.userAgent, tem;
         var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
         if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
         M= M? [M[1], M[2]]: [N, navigator.appVersion, '-?'];
         return M;
     })();
+
     showMessage = function(msg) {
         theParent = document.getElementsByTagName("body")[0]
         theKid = document.createElement("div");
@@ -205,6 +207,7 @@ Apigee.APIModel.Common = function() {
             });
         }
     };
+
     /**
      * This method closes the authentication modal dialog.
      */
@@ -214,6 +217,7 @@ Apigee.APIModel.Common = function() {
         $('[role="dialog"].modal .error_container').hide().html(''); // Empty the error container and hide it.
         //return false;
     };
+
     /**
      * This method validates the authentication fileds like email and password.
      * @return {String} empty string if there are no validation errors, otherwise returns the error message which needs to be displayed.
@@ -232,6 +236,7 @@ Apigee.APIModel.Common = function() {
         }
         return(errMessage);
     };
+
     this.shortenText = function(element,len) {
         var elementVal = element.text();
         if (elementVal.length > len) {
@@ -239,6 +244,7 @@ Apigee.APIModel.Common = function() {
             element.text(elementVal);
         }
     };
+
     /**
      * This method parses the given JSON from a string.
      * @param {String} theText A string which needs to convert as JSON,
@@ -253,6 +259,7 @@ Apigee.APIModel.Common = function() {
         }
         return theJson;
     };
+
     /**
      * This method fetches query parameter from the given URL.
      * @param {String} queryURL An URL.
@@ -277,6 +284,7 @@ Apigee.APIModel.Common = function() {
         }
         return ""; // // Return empty string, if there are no query params in the URL.
     };
+
     /**
      * This method escapes the special charecters like new line charecter, quotes and .., from a string.
      * @param {String} str A String,
@@ -292,6 +300,7 @@ Apigee.APIModel.Common = function() {
             .replace(/\\b/g, "\\b")
             .replace(/\\f/g, "\\f");
     };
+
     /**
      * This method shows error message to the user.
      * @param {String} errorMessage A error message string.
@@ -340,8 +349,8 @@ Apigee.APIModel.Common = function() {
       var datediff = date1.getTime() - date2.getTime(); //store the getTime diff - or +
       return (datediff / (24*60*60*1000)); //Convert values to -/+ days and return value
   };
-
 };
+
 Apigee.APIModel.Editor = function() {
     var editor; // A Code mirror editor for the request payload.
     /**
@@ -386,7 +395,7 @@ Apigee.APIModel.Editor = function() {
 /**
  * This class handles operation page related functions.
  */
- Apigee.APIModel.Methods = function() {
+Apigee.APIModel.Methods = function() {
     // Private properties
     var self = this; // Keep a reference of the current class when the context of 'this' is changing.
     // Check if it needed here, bacase it is not used anywhere other then init
@@ -821,7 +830,7 @@ Apigee.APIModel.Editor = function() {
                 $("[data-role='password_grant_container']").show();
 
 
-                // TODO: TEST above password grant
+                // TODO: TEST above password grant --> make this such that it works with the remember checkbox
 
             }
 
@@ -907,9 +916,11 @@ Apigee.APIModel.Editor = function() {
             if (!access_token)
                 showError("Please generate your token.");
             
+            // TODO: implement: if (remember_checkbox) save token locally
+
             passwordGrantCredentials = access_token;
             /* closing dance */
-            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;  // TODO: check if it needs bearer in front 
+            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "passwordgrant";
@@ -919,7 +930,7 @@ Apigee.APIModel.Editor = function() {
         }
     };
 
-    /**     // TODO: test this
+    /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
      *  Takes original URL for authentication systems (basic, oauth, custom)  
      *  @param  {String} takes the original URL
      *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
@@ -999,6 +1010,7 @@ Apigee.APIModel.Editor = function() {
     /**
      * Click event handler for the send request button.
      * Constructs all necessary params and make an AJAX call to proxy or display validation error message.
+     *  Supports all auth types: basicauth, oauth2, passwordgrant - makes request such that the webpage can render all metadata
      */
     this.sendRequest = function() {
         $("#working_alert").fadeIn(); // Show working alert message.
@@ -1209,17 +1221,16 @@ Apigee.APIModel.Editor = function() {
                 // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearererer auth
 
             if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+                // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
 
         } 
 
-
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-
 
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
@@ -1295,18 +1306,6 @@ Apigee.APIModel.Editor = function() {
         console.log(JSON.stringify({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue}));
         self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});
     };
-
-    /*      // TODO: make my URL look like this url
-        {
-            "url": "https://apiconsole-prod.apigee.net/smartdocs/v1/sendrequest?targeturl=https…%2Fapi.enterprise.apigee.com%2Fv1%2Forganizations%2Fmoearthnetworks%2Fapis",
-            "type": "get",
-            "data": null,
-            "headers": [],
-            "contentType": "application/x-www-form-urlencoded;charset=utf-8",
-            "processData": true
-        }
-    */
-
 
     /**
      * Success/Error callback method of a send request proxy API call.
@@ -1836,6 +1835,12 @@ Apigee.APIModel.InlineEdit = function() {
     };
 
     /**
+     *
+     *
+     */
+    this.
+
+    /**     // TODO: make a method that accomplishes the same thing for password grant
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
      */
     this.saveAuthModal = function() {
@@ -1857,6 +1862,7 @@ Apigee.APIModel.InlineEdit = function() {
         }
     };
 
+    // TODO: add password grant to this
     this.saveAdminCredentials = function() {
         basicAuth = "Basic "+$.base64Encode(userEmail+':'+ $.trim($("[data-role='edit_auth_modal']").find("#inputPassword").val()));
         var rememberCheckbox = $("[data-role='edit_auth_modal']").find("#chk_remember").is(":checked");
@@ -1871,6 +1877,7 @@ Apigee.APIModel.InlineEdit = function() {
         self.closeAuthModal();
         self.showAdminAuthenticationSection();
     };
+
     this.showUnauthorizedInfo = function(errorCode) {
         if (errorCode == "401") {
             $("[data-role='edit_auth_modal'] .error_container").html("Invalid credentials. Please try again.").show();
@@ -1878,6 +1885,7 @@ Apigee.APIModel.InlineEdit = function() {
             $("[data-role='edit_auth_modal'] .error_container").html("Error saving details. Please try again.").show();
         }
     };
+
     /**
      * The method shows the info about logged in users and provide clear and reset functionlities.
      */
