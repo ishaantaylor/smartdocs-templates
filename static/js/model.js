@@ -450,11 +450,11 @@ Apigee.APIModel.Editor = function() {
         methodURLElement = $("[data-role='method_url_container']");
         // Add tooltip to template params.
 
-        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
+        console.log(methodURLElement);
 
         methodURLElement.html(methodURLElement.html().replace(/\{/g,"<span data-toggle='tooltip' data-original-title=''><span class='template_param' contenteditable='true'>{").replace(/\}/g,"}</span><span></span></span>"));
 
-        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
+        console.log(methodURLElement);
 
         methodURLElement.find("span.template_param").each(function() {
             $(this).siblings("span").attr("data-role",$(this).text());
@@ -919,6 +919,27 @@ Apigee.APIModel.Editor = function() {
         }
     };
 
+    //TODO write this lol
+    /**
+     *  Takes original URL for authentication systems (basic, oauth, custom)  
+     *  @param  {String} takes the original URL
+     *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
+     */
+    this.formatURLforPWG = function(oldURL) {
+        var newURL = "";        // holds new URL
+        var comparator = "";    // holds 2 char comparator
+        var copy = false;       // should the newURL start grabbing oldURL chars or not
+        for (var i = 1; i < oldURL.length; i++) {
+            if (copy)                           // if i can copy
+                newURL += oldURL.charAt(i);
+            if (!copy)                          // if i cant copy
+                comparator = oldURL.charAt(i-1) + oldURL.charAt(i);
+            if (!copy && comparator == "v1")    // if i cant copy and ive reached the correct comparator    
+                copy = true;
+        }
+        return newURL;
+    }
+
     this.getCustomTokenCredentials = function() {
         if (!isCutomTokenShown) {
             windowLocation = windowLocation.split("/resources/")[0];
@@ -975,6 +996,7 @@ Apigee.APIModel.Editor = function() {
         rawCode = "";
         bodyContent = false;
     };
+
     /**
      * Click event handler for the send request button.
      * Constructs all necessary params and make an AJAX call to proxy or display validation error message.
@@ -1196,16 +1218,19 @@ Apigee.APIModel.Editor = function() {
             if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
-            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + queryParamString;
-            console.log("queryParamString: " + queryParamString);
         } 
 
-        console.log("urlToTest: " + urlToTest);
-        targetUrl = urlToTest;
-        urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-        console.log("urlToTest: " + urlToTest);
-        urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-        console.log("urlToTest: " + urlToTest);
+        // TODO: test this..
+        if (selectedAuthScheme == "passwordgrant") {
+            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+        } else {
+            console.log("urlToTest: " + urlToTest);
+            targetUrl = urlToTest;
+            urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
+            console.log("urlToTest: " + urlToTest);
+            urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
+            console.log("urlToTest: " + urlToTest);
+        }
 
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
@@ -1287,6 +1312,7 @@ Apigee.APIModel.Editor = function() {
      * The request and response content are shown in Prism editor.
      */
     this.renderRequest = function(data) {
+        console.log(data);
         var responseContainerElement = $("[data-role='response-container']");
         var requestContainerElement = $("[data-role='request-container']");
         if (data == "" || data == null) {
@@ -1320,6 +1346,9 @@ Apigee.APIModel.Editor = function() {
         responseContainerString += "> HTTP/"+httpVersion +" "+ responseStatusCode +"  "+ responseReasonPhrase+"</strong>";
         // Response headers construction.
         responseContainerString += "<dl>";
+
+        console.log(data.responseHeaders);
+        
         for (var i=0; i<data.responseHeaders.length; i++) {
             responseContainerString +=  "<dt>";
             responseContainerString += unescape(data.responseHeaders[i].name);
@@ -1329,6 +1358,7 @@ Apigee.APIModel.Editor = function() {
         }
         responseContainerString += "</dl>";
         responseContainerElement.html(responseContainerString);
+
         // Response content construction.
         if (rawCode != "") {
             /**
@@ -1369,9 +1399,18 @@ Apigee.APIModel.Editor = function() {
                 }
             }
         }
+
+        console.log("targeturl: " + targeturl);
         // Request line fine details contruction.
         var hostName = targetUrl.split("//")[1].split("/")[0];
+        
+        console.log("hostName: " + hostName);
+
+
         var requestContainerString = "<strong>"+data.requestVerb+" "+ targetUrl.split(hostName)[1] + " HTTP/"+httpVersion+"</strong>";
+        
+        console.log(requestContainerString);
+
         // Request headers construction.
         requestContainerString += "<dl>";
         for (var i=0; i<data.requestHeaders.length; i++) {
