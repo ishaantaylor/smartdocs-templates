@@ -919,8 +919,7 @@ Apigee.APIModel.Editor = function() {
         }
     };
 
-    //TODO write this lol
-    /**
+    /**     // TODO: test this
      *  Takes original URL for authentication systems (basic, oauth, custom)  
      *  @param  {String} takes the original URL
      *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
@@ -938,7 +937,7 @@ Apigee.APIModel.Editor = function() {
                 copy = true;
         }
         return newURL;
-    }
+    };
 
     this.getCustomTokenCredentials = function() {
         if (!isCutomTokenShown) {
@@ -1047,13 +1046,7 @@ Apigee.APIModel.Editor = function() {
 
         //change the variable name to Target URL.
         var urlToTest = $("[data-role='method_url_container']").text();
-    
-
-        console.log("urlToTest: " + urlToTest);  // TODO: this url to test var has the stuff i need. i need to remove everything before v1 and append everything after it to MY url to test
-
-
         var methodVerb = $.trim($("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
-
         var headersList = [];
         // Loop through the header params and identify if required params are empty otherwise add header params in the list.
         if ($("[data-role='header-param-list']").length) {
@@ -1218,19 +1211,15 @@ Apigee.APIModel.Editor = function() {
             if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
+            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+
         } 
 
-        // TODO: test this..
-        if (selectedAuthScheme == "passwordgrant") {
-            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
-        } else {
-            console.log("urlToTest: " + urlToTest);
-            targetUrl = urlToTest;
-            urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-            console.log("urlToTest: " + urlToTest);
-            urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-            console.log("urlToTest: " + urlToTest);
-        }
+
+        targetUrl = urlToTest;
+        urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
+        urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
+
 
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
@@ -1303,8 +1292,21 @@ Apigee.APIModel.Editor = function() {
                 bodyPayload = window.apiModelEditor.getRequestPayLoad();
             }
         }
-        self.makeAJAXCall({"url":urlToTest,"type":methodVerb,"data" : bodyPayload, "callback":self.renderRequest,"headers":headersList, "contentType":contentTypeValue,"processData":processDataValue});
+        console.log(JSON.stringify({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue}));
+        self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});
     };
+
+    /*      // TODO: make my URL look like this url
+        {
+            "url": "https://apiconsole-prod.apigee.net/smartdocs/v1/sendrequest?targeturl=https…%2Fapi.enterprise.apigee.com%2Fv1%2Forganizations%2Fmoearthnetworks%2Fapis",
+            "type": "get",
+            "data": null,
+            "headers": [],
+            "contentType": "application/x-www-form-urlencoded;charset=utf-8",
+            "processData": true
+        }
+    */
+
 
     /**
      * Success/Error callback method of a send request proxy API call.
@@ -1348,7 +1350,7 @@ Apigee.APIModel.Editor = function() {
         responseContainerString += "<dl>";
 
         console.log(data.responseHeaders);
-        
+
         for (var i=0; i<data.responseHeaders.length; i++) {
             responseContainerString +=  "<dt>";
             responseContainerString += unescape(data.responseHeaders[i].name);
@@ -1400,7 +1402,6 @@ Apigee.APIModel.Editor = function() {
             }
         }
 
-        console.log("targeturl: " + targeturl);
         // Request line fine details contruction.
         var hostName = targetUrl.split("//")[1].split("/")[0];
         
