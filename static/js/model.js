@@ -543,7 +543,6 @@ Apigee.APIModel.Editor = function() {
         }
     };
 
-// TODO: figure out if i have to write custom request callback method to get the token from the ajax call and put it in the passwordgrant_modal - i do --> not
     /**
      *  Sends request for 'access+token' to Purina, places it into a form element 'inToken' in password_grant_modal 
      *  @param  {Void}  It grabs the elements with jQuery
@@ -555,7 +554,7 @@ Apigee.APIModel.Editor = function() {
             var email = $("#inEmail")[0].value;
             var inputData = "grant_type=password&username=" + email + "&password=";
 
-        if (true /* TODO: valid password && valid username (valid doesnt mean authenticated)*/) {
+        if (true /* TODO: valid password && valid username (valid doesnt mean authenticated) OR OR OR figure out what may cause an error and put a preventetive condition here*/) {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
@@ -564,7 +563,8 @@ Apigee.APIModel.Editor = function() {
                 success: function (data, textStatus, jqXHR) {
                     // console.log(textStatus);
                     // console.log(jqXHR);
-                    $("#inToken").val(data.access_token);        // TODO: fix this part. it should pust the token value into the html place
+                    passwordGrantCredentials = data.access_token;  
+                    $("#inToken").val(passwordGrantCredentials); 
                     $("#inPassword").val("");
                     $("#inEmail").val("");
 
@@ -582,9 +582,6 @@ Apigee.APIModel.Editor = function() {
                 },
             });
         }
-
-
-        // place into html component in pw grant modal
     }
 
     /**
@@ -881,19 +878,21 @@ Apigee.APIModel.Editor = function() {
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
             
-            // TODO: write function that validates the basic auth fields  -->  i dont think i actualy have to do this, see below comment
 
 
-
-            // TODO: write function that saves the bearer token to local / session storage - throw error if no token only
             var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
-            var authHeader = "Bearer " + passwordGrantCredentials; /*.accessToken*/
+            var access_token = $("#inToken")[0].value;
+            if (!access_token)
+                showError("Please generate your token.");
+            
+            var authHeader = "Bearer " + access_token;
 
-            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;  // TODO: check if it needs bearer in front 
+            /* closing dance */
+            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + authHeader;  // TODO: check if it needs bearer in front 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
-
             self.updateAuthContainer();
+            selectedAuthScheme = "passwordgrant";
             self.closeAuthModal(); 
 
             // TODO: add new ROPC grant (?) for password_grant_modal
@@ -1167,14 +1166,19 @@ Apigee.APIModel.Editor = function() {
 
                 // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearererer auth
 
-            if (localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+            if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
-        }
+            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1";
+        } 
 
+        console.log("@ 1175: " + urlToTest);
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
+        console.log("@ 1178: " + urlToTest);
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
+        console.log("@ 1180: " + urlToTest);
+
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
         var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
@@ -1200,6 +1204,7 @@ Apigee.APIModel.Editor = function() {
                     multiPartTypes += (jQuery('[data-role="request-payload-example"]').length) ? "+text" : "";
                     multiPartTypes += (jQuery("[data-role='attachments-list']").length) ? "+attachment" : "";
                     urlToTest += "&multiparttypes="+multiPartTypes;
+                    console.log("@ 1207: " + urlToTest);
                 }
             } else {
                 for (var i=0,l=headersList.length; i<l; i++) {
@@ -1209,6 +1214,7 @@ Apigee.APIModel.Editor = function() {
                 }
                 if (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='attachments-list']").length) {
                     urlToTest += "&multiparttypes=text+attachment";
+                    console.log("@ 1217: " + urlToTest);
                 }
             }
 
