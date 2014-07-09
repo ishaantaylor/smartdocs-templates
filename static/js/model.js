@@ -5,7 +5,7 @@
  * trademarks are the property of their respective owners.
  */
 // This file contains API Modeling docs related class defitions.
-// This file is depends on JQuery, base64 jQuery plugin.
+// This file is depends on $, base64 $ plugin.
 // This file also use bootstrap editor, Codemirror's XML and JSON editor plugin and Prism editor plugin.
 
 /**
@@ -44,7 +44,7 @@ Apigee.APIModel.Common = function() {
      */
     validateEmail = function(elementValue) {
         var flag = false;
-        if (jQuery.trim(elementValue).length > 1) { // Chceck if it is empty.
+        if ($.trim(elementValue).length > 1) { // Chceck if it is empty.
             var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
             if (regEx.test(elementValue)) {
                 if(elementValue.indexOf("..")==-1) flag = true;
@@ -80,7 +80,7 @@ Apigee.APIModel.Common = function() {
         if (requestUrl.indexOf("targeturl=") != -1) {
             requestUrl = requestUrl.split("targeturl=")[0].toString();
         }    
-        if (jQuery.browser.msie && window.XDomainRequest && parseInt(jQuery.browser.version) <= 9 && requestUrl.indexOf(currentHost) == -1) {
+        if ($.browser.msie && window.XDomainRequest && parseInt($.browser.version) <= 9 && requestUrl.indexOf(currentHost) == -1) {
             var requestURL = request.url;
             var defaultMethodType = (request.type) ? request.type : "get";
             if (requestURL.indexOf("targeturl") != -1) {
@@ -107,7 +107,7 @@ Apigee.APIModel.Common = function() {
                 var data;
                 var forJSON = true;
                 try {
-                    data = jQuery.parseJSON(xdr.responseText);
+                    data = $.parseJSON(xdr.responseText);
                     console.log(/*"data: " + */data);
                 }
                 catch (e) {
@@ -123,11 +123,11 @@ Apigee.APIModel.Common = function() {
                             if (parseInt(responseStatusCode) >= 400) {
                                 if (request.errorCallback) {
                                     request.errorCallback(responseStatusCode);
-                                    jQuery("#working_alert").fadeOut(); // Hide working alert message.
+                                    $("#working_alert").fadeOut(); // Hide working alert message.
                                     return;
                                 } else {
                                     request.callback(data);
-                                    jQuery("#working_alert").fadeOut(); // Hide working alert message.
+                                    $("#working_alert").fadeOut(); // Hide working alert message.
                                     return;
                                 }
                             }
@@ -137,7 +137,7 @@ Apigee.APIModel.Common = function() {
                         request.callback(xdr.responseText);
                     }
                 }
-                jQuery("#working_alert").fadeOut(); // Hide working alert message.
+                $("#working_alert").fadeOut(); // Hide working alert message.
             }
             xdr.onerror = function() {
                 if (request.errorCallback) {
@@ -145,12 +145,12 @@ Apigee.APIModel.Common = function() {
                 } else {
                     request.callback(xdr.responseText);
                 }
-                jQuery("#working_alert").fadeOut(); // Hide working alert message.
+                $("#working_alert").fadeOut(); // Hide working alert message.
             }
             xdr.open(defaultMethodType, requestURL);
             xdr.send(methodData);
         } else {
-            jQuery.ajax({
+            $.ajax({
                 url:request.url,
                 cache: false,
                 type:(request.hasOwnProperty("type")) ? request.type : "get", // Type of a method, "get" by default.
@@ -200,7 +200,7 @@ Apigee.APIModel.Common = function() {
                 },
                 // Gets called once an AJAX completes.
                 complete: function() {
-                    jQuery("#working_alert").fadeOut(); // Hide working alert message.
+                    $("#working_alert").fadeOut(); // Hide working alert message.
                 }
             });
         }
@@ -209,9 +209,9 @@ Apigee.APIModel.Common = function() {
      * This method closes the authentication modal dialog.
      */
     this.closeAuthModal = function() {
-        jQuery('[role="dialog"].modal').modal('hide')
-        jQuery('[role="dialog"].modal input').removeClass('error'); // Remove error class from the input boxes.
-        jQuery('[role="dialog"].modal .error_container').hide().html(''); // Empty the error container and hide it.
+        $('[role="dialog"].modal').modal('hide')
+        $('[role="dialog"].modal input').removeClass('error'); // Remove error class from the input boxes.
+        $('[role="dialog"].modal .error_container').hide().html(''); // Empty the error container and hide it.
         //return false;
     };
     /**
@@ -220,13 +220,13 @@ Apigee.APIModel.Common = function() {
      */
     this.validateBasicAuthFields = function(modalName) {
         var errMessage = "";
-        userEmail = jQuery.trim(jQuery("[data-role='"+modalName+"']").find("#inputEmail").val());
+        userEmail = $.trim($("[data-role='"+modalName+"']").find("#inputEmail").val());
         if (!userEmail.length) { // Check if it is empty.
-            jQuery("#inputEmail").addClass("error");
+            $("#inputEmail").addClass("error");
             errMessage += "<span>Email/Username required.</span><br/>";
         }
-        var userPasswordElement = jQuery("[data-role='"+modalName+"']").find("#inputPassword");
-        if (!jQuery.trim(userPasswordElement.val()).length) { // Check if it is empty.
+        var userPasswordElement = $("[data-role='"+modalName+"']").find("#inputPassword");
+        if (!$.trim(userPasswordElement.val()).length) { // Check if it is empty.
             userPasswordElement.addClass("error");
             errMessage += "<span>Password required.</span><br/>"
         }
@@ -247,7 +247,7 @@ Apigee.APIModel.Common = function() {
     this.parseAndReturn = function(theText) {
         var theJson = '';
         try {
-          theJson = jQuery.parseJSON(theText);
+          theJson = $.parseJSON(theText);
         } catch (e) {
           theJson = theText;
         }
@@ -298,8 +298,8 @@ Apigee.APIModel.Common = function() {
      * @return {Void} displays error message.
      */
     this.showError = function(errorMessage) {
-        jQuery("[data-role='error_container']").html(errorMessage).show();
-        jQuery("body").scrollTop(0); // Scroll to page's top position.
+        $("[data-role='error_container']").html(errorMessage).show();
+        $("body").scrollTop(0); // Scroll to page's top position.
     };
 
     this.showUnsupportedBrowserAlertMessage = function() {
@@ -348,14 +348,14 @@ Apigee.APIModel.Editor = function() {
      * This method initializes the request payload sample code mirror editor.
      */
     this.initRequestPayloadEditor = function() {
-        if (jQuery('[data-role="request-payload-example"]').length) { // Check if request payload example element is available.
-            jQuery('[data-role="request-payload-example"]').children("textarea").show();
-            bodyPayloadElementValue = jQuery.trim(jQuery('[data-role="request-payload-example"]').find("textarea").val());
-            jQuery('.request_payload textarea').val(bodyPayloadElementValue);
-            bodyPayloadElement = jQuery('.request_payload textarea');
+        if ($('[data-role="request-payload-example"]').length) { // Check if request payload example element is available.
+            $('[data-role="request-payload-example"]').children("textarea").show();
+            bodyPayloadElementValue = $.trim($('[data-role="request-payload-example"]').find("textarea").val());
+            $('.request_payload textarea').val(bodyPayloadElementValue);
+            bodyPayloadElement = $('.request_payload textarea');
             if (bodyPayloadElement) { // Set xml/json mode based on the request payload value.
                 var modeName = (bodyPayloadElement.data("format") == "application/xml") ? "xml" : "javascript";
-                editor = CodeMirror.fromTextArea( jQuery('.request_payload textarea').get(0), {
+                editor = CodeMirror.fromTextArea( $('.request_payload textarea').get(0), {
                     mode: modeName,
                     lineNumbers: true
                 });
@@ -426,13 +426,13 @@ Apigee.APIModel.Editor = function() {
         // Convert the auth type value as user friendly text.
         var authTypeElement = $("[data-role='auth-type']");
         authType = $.trim(authTypeElement.text());
-        console.log("@ 429 authType: " + authType);
+        console.log("authType: " + authType);
         if (authType.split(",").length > 1) {
             authType = authType.substr(0,authType.length-1); // Remove the last extra comma symbol.
         }
         authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","Password Grant").replace("PASSWORDGRANT", "Password Grant").replace("NOAUTH","No auth");
 
-        console.log("@ 429 authType: " + authType);
+        console.log("authType: " + authType);
 
         authTypeElement.html(authType); // Update the auth type HTML element.
 
@@ -443,24 +443,24 @@ Apigee.APIModel.Editor = function() {
             resourceURLString += '<span data-role="'+ $(this).attr('data-role') + '">' +$(this).html() + '</span>';
         });
 
-        console.log("@ 446 resourceURLString: " + resourceURLString);
+        console.log("resourceURLString: " + resourceURLString);
 
         $("[data-role='method_url_container']").html(resourceURLString);
         // Template parameter releated changes.
         methodURLElement = $("[data-role='method_url_container']");
         // Add tooltip to template params.
 
-        console.log("@ 453 methodURLElement[0].value: " + methodURLElement[0].value);
+        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
 
         methodURLElement.html(methodURLElement.html().replace(/\{/g,"<span data-toggle='tooltip' data-original-title=''><span class='template_param' contenteditable='true'>{").replace(/\}/g,"}</span><span></span></span>"));
 
-        console.log("@ 457 methodURLElement[0].value: " + methodURLElement[0].value);
+        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
 
         methodURLElement.find("span.template_param").each(function() {
             $(this).siblings("span").attr("data-role",$(this).text());
         });
 
-        console.log("@ 463 methodURLElement[0].value: " + methodURLElement[0].value);
+        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
 
         // Create a sibling node to each template param and add original value to the siblings.
         // Original value will be used while validating template params.
@@ -499,26 +499,26 @@ Apigee.APIModel.Editor = function() {
         }
         // Create a new custom property called 'data-original-value' in query params and header params value field.
         // Assign the default value to the custom property 'data-original-value'. This value will be used in clicking 'reset' link.
-        jQuery("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='attachments-list']").each(function(i, obj) {
-            if (!jQuery(this).find("span.required").length && jQuery(this).find(".value select").length) {
-                jQuery(this).find(".value select").prepend("<option value='"+DEFAULT_OPTIONAL_PARAM_OPTION+"' selected>"+DEFAULT_OPTIONAL_PARAM_OPTION+"</option>");
+        $("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='attachments-list']").each(function(i, obj) {
+            if (!$(this).find("span.required").length && $(this).find(".value select").length) {
+                $(this).find(".value select").prepend("<option value='"+DEFAULT_OPTIONAL_PARAM_OPTION+"' selected>"+DEFAULT_OPTIONAL_PARAM_OPTION+"</option>");
             }
-            var valueElement = jQuery(this).find("[data-role='value']");
-            valueElement.attr('data-original-value',jQuery.trim(valueElement.val()));
+            var valueElement = $(this).find("[data-role='value']");
+            valueElement.attr('data-original-value',$.trim(valueElement.val()));
         });
         // Remove the last extra comma symbol from category field.
-        var categoryElement = jQuery("[data-role='category']");
-        var categoryElementValue = jQuery.trim(categoryElement.text());
+        var categoryElement = $("[data-role='category']");
+        var categoryElementValue = $.trim(categoryElement.text());
         if (categoryElementValue.split(",").length > 1) {
             categoryElementValue = categoryElementValue.substr(0,categoryElementValue.length-1); // Remove the last extra comma symbol.
         }
         categoryElement.html(categoryElementValue); // Update the auth type HTML element.
         // Show the request payload docs by default if request payload sample is not available.
-        if (jQuery("[data-role='request-payload-docs']").length && !jQuery("[data-role='request-payload-example']").length) {
-            jQuery("[data-role='request-payload-docs']").show();
+        if ($("[data-role='request-payload-docs']").length && !$("[data-role='request-payload-example']").length) {
+            $("[data-role='request-payload-docs']").show();
         }
-        jQuery("#working_alert").css('left',(jQuery(window).width()/2)- 56); // Set working alert container left position to show in window's center position.
-        jQuery("#method_content").show();
+        $("#working_alert").css('left',($(window).width()/2)- 56); // Set working alert container left position to show in window's center position.
+        $("#method_content").show();
         window.apiModelEditor.initRequestPayloadEditor(); // Initialize the request payload sample editor.
         var proxyURLLocation = windowLocation.split("/apimodels/")[0];
         if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
@@ -562,7 +562,7 @@ Apigee.APIModel.Editor = function() {
 
     /**
      *  Sends request for 'access+token' to Purina, places it into a form element 'inToken' in password_grant_modal 
-     *  @param  {Void}  It grabs the elements with jQuery
+     *  @param  {Void}  It grabs the elements with $
      *  @return {Void}  puts token into html component in password grant modal
      */
     this.handlePWG = function() {
@@ -613,28 +613,28 @@ Apigee.APIModel.Editor = function() {
         var defaultCustomTokenObject = data;
         var customTokenType = defaultCustomTokenObject.tokenType;
         var tokensLength = Object.keys(defaultCustomTokenObject.tokenMap).length;
-        jQuery("[data-role='custom_token_row']" ).each(function(index) {
+        $("[data-role='custom_token_row']" ).each(function(index) {
             if(index > 0) {
-                jQuery(this).remove();
+                $(this).remove();
             }
         });
         if (tokensLength >= 1) {
             for( var i=1, n= tokensLength; i<n; i++) {
-                jQuery("[data-role='custom_token_row']" ).first().clone().appendTo( "[data-role='custom_token_rows']" );
+                $("[data-role='custom_token_row']" ).first().clone().appendTo( "[data-role='custom_token_rows']" );
             }
         }
         var index = 1;
         for (var key in defaultCustomTokenObject.tokenMap) {
             var customTokenName = key;
             var customTokenValue = defaultCustomTokenObject.tokenMap[key];
-            jQuery("[data-role='custom_token_row']:nth-child("+index+")").find("[data-role='name']").val(customTokenName);
-            jQuery("[data-role='custom_token_row']:nth-child("+index+")").find("[data-role='value']").val(customTokenValue);
+            $("[data-role='custom_token_row']:nth-child("+index+")").find("[data-role='name']").val(customTokenName);
+            $("[data-role='custom_token_row']:nth-child("+index+")").find("[data-role='value']").val(customTokenValue);
             index++;
         }
         if (customTokenType == "header") {
-            jQuery("[data-role='custom_token_modal']").find("[data-role='header']").attr('checked','checked');
+            $("[data-role='custom_token_modal']").find("[data-role='header']").attr('checked','checked');
         } else {
-            jQuery("[data-role='custom_token_modal']").find("[data-role='query']").attr('checked','checked');
+            $("[data-role='custom_token_modal']").find("[data-role='query']").attr('checked','checked');
         }
     };
 
@@ -682,8 +682,8 @@ Apigee.APIModel.Editor = function() {
      */
     this.updateAuthContainer = function() {
         if (authType.indexOf("No auth") != -1) {
-            jQuery("[data-role='authentication_container']").css({'visibility':'hidden'});
-            jQuery(".icon_lock").css({'visibility':'hidden'});
+            $("[data-role='authentication_container']").css({'visibility':'hidden'});
+            $(".icon_lock").css({'visibility':'hidden'});
             
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
@@ -719,15 +719,15 @@ Apigee.APIModel.Editor = function() {
                             if (sessionStorage.selectedAuthScheme) {
                                 var selected = (apiName == sessionStorage.selectedAuthScheme.split("@@@")[0] && revisionNumber == sessionStorage.selectedAuthScheme.split("@@@")[1] && sessionStorage.selectedAuthScheme.split("@@@")[2]== "basicauth") ? "selected" : "";
                             }
-                        //jQuery(".authentication").html(constructAuthenticationHTML('basicauth',selected,emailString)); // Display current user's basic auth info.
+                        //$(".authentication").html(constructAuthenticationHTML('basicauth',selected,emailString)); // Display current user's basic auth info.
                         if (selected != "") {
-                            jQuery("[data-role='basic_auth_container']").addClass(selected);
+                            $("[data-role='basic_auth_container']").addClass(selected);
                         }
-                        jQuery("[data-role='basic_auth_container']").find(".link_open_basicauth").html(emailString);
-                        jQuery("[data-role='basic_auth_container']").find(".icon-remove").css('display','inline-block');
+                        $("[data-role='basic_auth_container']").find(".link_open_basicauth").html(emailString);
+                        $("[data-role='basic_auth_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='basic_auth_container']").show();
+                $("[data-role='basic_auth_container']").show();
             }
             else if (authType.indexOf("OAuth 2") != -1) { // Show OAuth 2 info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -753,16 +753,16 @@ Apigee.APIModel.Editor = function() {
                 if (authCredentials !== "") {
                     // Format of the apisBasicAuthDetails - api name@@@revision number@@@oauth 2 details.
                     if (apiName == authCredentials.split("@@@")[0]) {
-                        oauth2Credentials = jQuery.parseJSON(authCredentials.split("@@@")[1]);
+                        oauth2Credentials = $.parseJSON(authCredentials.split("@@@")[1]);
                         var selected = (apiName == authCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "oauth2") ? "selected" : "";
                         if (selected != "") {
-                            jQuery("[data-role='oauth2_container']").addClass(selected);
+                            $("[data-role='oauth2_container']").addClass(selected);
                         }
-                        jQuery("[data-role='oauth2_container']").find(".link_open_oauth2").html("Authenticated");
-                        jQuery("[data-role='oauth2_container']").find(".icon-remove").css('display','inline-block');
+                        $("[data-role='oauth2_container']").find(".link_open_oauth2").html("Authenticated");
+                        $("[data-role='oauth2_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='oauth2_container']").show();
+                $("[data-role='oauth2_container']").show();
             }
             else if (authType.indexOf("Custom Token") != -1) { // Show Custom token info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -777,13 +777,13 @@ Apigee.APIModel.Editor = function() {
                         //custemTokenCredentials = custemTokenSession.split("@@@")[2]+ "@@@" + custemTokenSession.split("@@@")[3]+ "@@@" + custemTokenSession.split("@@@")[4];
                         var selected = (apiName == sessionStorage.selectedAuthScheme.split("@@@")[0] && revisionNumber == sessionStorage.selectedAuthScheme.split("@@@")[1] && sessionStorage.selectedAuthScheme.split("@@@")[2]== "customtoken") ? "selected" : "";
                         if (selected != "") {
-                            jQuery("[data-role='custom_token_container']").addClass(selected);
+                            $("[data-role='custom_token_container']").addClass(selected);
                         }
-                        jQuery("[data-role='custom_token_container']").find(".link_open_customtoken").html("Custom Token");
-                        jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','inline-block');
+                        $("[data-role='custom_token_container']").find(".link_open_customtoken").html("Custom Token");
+                        $("[data-role='custom_token_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='custom_token_container']").show();
+                $("[data-role='custom_token_container']").show();
             }
             else if (authType.indexOf("Password Grant") != -1) {  // Show password grant info
                 if (authType.indexOf(",") == -1) {
@@ -809,16 +809,16 @@ Apigee.APIModel.Editor = function() {
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
                     if (apiName == passwordGrantCredentials.split("@@@")[0]) {
-                        passwordGrantCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
+                        passwordGrantCredentials = $.parseJSON(passwordGrantCredentials.split("@@@")[1]);
                         var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
-                            jQuery("[data-role='password_grant_container']").addClass(selected);
+                            $("[data-role='password_grant_container']").addClass(selected);
                         }
-                        jQuery("[data-role='password_grant_container']").find(".link_open_passwordgrant").html("Authenticated");
-                        jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','inline-block');
+                        $("[data-role='password_grant_container']").find(".link_open_passwordgrant").html("Authenticated");
+                        $("[data-role='password_grant_container']").find(".icon-remove").css('display','inline-block');
                     }
                 }
-                jQuery("[data-role='password_grant_container']").show();
+                $("[data-role='password_grant_container']").show();
 
 
                 // TODO: TEST above password grant
@@ -834,15 +834,15 @@ Apigee.APIModel.Editor = function() {
      * @return {Void} Show/Hide request/response tab content.
      */
     this.swapSampleRequestResponseContainer = function() {
-        var $currentElement = jQuery(this);
+        var $currentElement = $(this);
         if ($currentElement.attr('id') ==  'link_request_tab') { // Show the request
-            jQuery("#link_response_tab").removeClass('selected');
-            jQuery("#request_response_container .response").hide();
-            jQuery("#request_response_container .request").show();
+            $("#link_response_tab").removeClass('selected');
+            $("#request_response_container .response").hide();
+            $("#request_response_container .request").show();
         } else {
-            jQuery("#link_request_tab").removeClass('selected');
-            jQuery("#request_response_container .request").hide();
-            jQuery("#request_response_container .response").show();
+            $("#link_request_tab").removeClass('selected');
+            $("#request_response_container .request").hide();
+            $("#request_response_container .response").show();
         }
         $currentElement.addClass('selected');
     };
@@ -851,13 +851,13 @@ Apigee.APIModel.Editor = function() {
      * The method handles saving auth details/displays error, when user clicks 'Save' button in the Basic Auth pop-up dialog.
      */
     this.saveAuthModal = function(e) {
-        var parentClass = jQuery(this).parents(".modal");
+        var parentClass = $(this).parents(".modal");
         if (parentClass.attr('data-role') == 'basic_auth_modal') {
             var errMessage = self.validateBasicAuthFields('basic_auth_modal'); // Validate email and password.
             if (errMessage == "") { // If there are no errors.
-                userEmail = jQuery("#inputEmail").val();
-                basicAuth = "Basic "+jQuery.base64Encode(userEmail+':'+jQuery("#inputPassword").val());
-                var rememberCheckbox = jQuery("[data-role='basic_auth_modal']").find("#chk_remember").is(":checked");
+                userEmail = $("#inputEmail").val();
+                basicAuth = "Basic "+$.base64Encode(userEmail+':'+$("#inputPassword").val());
+                var rememberCheckbox = $("[data-role='basic_auth_modal']").find("#chk_remember").is(":checked");
                 if (rememberCheckbox) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -871,7 +871,7 @@ Apigee.APIModel.Editor = function() {
                 selectedAuthScheme = "basicauth";
                 self.updateAuthContainer();
             } else { // Display error message.
-                jQuery("[role='dialog'].modal .error_container").html(errMessage+"Please try again.").show();
+                $("[role='dialog'].modal .error_container").html(errMessage+"Please try again.").show();
             }
         } else if (parentClass.attr('data-role') == 'oauth2_modal') {
             var oauth2Url = window.location.href;
@@ -887,10 +887,10 @@ Apigee.APIModel.Editor = function() {
             self.makeAJAXCall({"url":oauth2Url+"/authschemes/oauth2webserverflow/authUrl",dataType:"json", "callback":self.renderCallbackURL, "errorCallback" :self.handleOAuth2Failure});
         } else if (parentClass.attr('data-role') == 'custom_token_modal') {
             customTokenObject = {};
-            customTokenObject.tokenType = (jQuery("[data-role='custom_token_modal']").find("[data-role='header']").attr('checked') == "checked") ? "header" : "query";
+            customTokenObject.tokenType = ($("[data-role='custom_token_modal']").find("[data-role='header']").attr('checked') == "checked") ? "header" : "query";
             customTokenObject.tokenMap = {};
-            jQuery("[data-role='custom_token_row']").each(function() {
-                customTokenObject.tokenMap[jQuery(this).find("[data-role='name']").val()] = jQuery(this).find("[data-role='value']").val();
+            $("[data-role='custom_token_row']").each(function() {
+                customTokenObject.tokenMap[$(this).find("[data-role='name']").val()] = $(this).find("[data-role='value']").val();
             });
             sessionStorage.revisionsCustomTokenCredentialsDetails = apiName +"@@@"+ revisionNumber + "@@@" + JSON.stringify(customTokenObject);
             self.closeAuthModal(); // Close the auth modal.
@@ -900,17 +900,16 @@ Apigee.APIModel.Editor = function() {
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
             
 
-
             // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var access_token = $("#inToken")[0].value;
+            console.log("#inToken: " + access_token);
             if (!access_token)
                 showError("Please generate your token.");
             
-            var authHeader = "Bearer " + access_token;
-
+            passwordGrantCredentials = access_token;
             /* closing dance */
-            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + authHeader;  // TODO: check if it needs bearer in front 
+            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@" + passwordGrantCredentials;  // TODO: check if it needs bearer in front 
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "passwordgrant";
@@ -932,13 +931,13 @@ Apigee.APIModel.Editor = function() {
      * The request payload sample/request payload description link click event handler - Show/Hide payload sample content/request payload sample content, based on the link.
      */
     this.toggleRequestPayload = function(e) {
-        var element = jQuery(this);
+        var element = $(this);
         if (!element.parent().hasClass("active")) { // Do nothing, if user clicks on the active link.
             element.parent().siblings().removeClass("active");
             element.parent().addClass("active");
             var role = element.attr("data-role");
-            var requestPayloadDocsElement = jQuery("[data-role='request-payload-docs']");
-            var requestPayloadExampleElement = jQuery("[data-role='request-payload-example']");
+            var requestPayloadDocsElement = $("[data-role='request-payload-docs']");
+            var requestPayloadExampleElement = $("[data-role='request-payload-example']");
             if (requestPayloadDocsElement.siblings("textarea").length) { // show/hide text are in inline edit use case.
                 requestPayloadDocsElement.siblings("textarea").hide();
                 requestPayloadDocsElement.siblings("a.allow_edit").hide();
@@ -960,19 +959,19 @@ Apigee.APIModel.Editor = function() {
      * Click event handler for the reset link avaiable next to the send request button.
      */
     this.resetFields = function() {
-        jQuery("[data-role='query-param-list'],[data-role='header-param-list'],[data-role='body-param-list']").find("input").each(function() { // Empty the header/query input elements.
-            jQuery(this).val('');
+        $("[data-role='query-param-list'],[data-role='header-param-list'],[data-role='body-param-list']").find("input").each(function() { // Empty the header/query input elements.
+            $(this).val('');
         });
-        jQuery("[data-role='query-param-list'],[data-role='header-param-list']").each(function(i, obj) {
-            var valueElement = jQuery(this).find("[data-role='value']");
+        $("[data-role='query-param-list'],[data-role='header-param-list']").each(function(i, obj) {
+            var valueElement = $(this).find("[data-role='value']");
             valueElement.val(valueElement.attr('data-original-value'));
         });
-        if (jQuery('[data-role="request-payload-example"]').length) {
-            var bodyPayloadElementValue = jQuery('[data-role="request-payload-example"]').children('textarea').val();
+        if ($('[data-role="request-payload-example"]').length) {
+            var bodyPayloadElementValue = $('[data-role="request-payload-example"]').children('textarea').val();
             window.apiModelEditor.setRequestPayLoad(bodyPayloadElementValue);
         };
-        jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
-        jQuery("#request_response_container .request").html("<p>Make a request and see the response.</p>");
+        $("#request_response_container .response").html("<p>Make a request and see the response.</p>");
+        $("#request_response_container .request").html("<p>Make a request and see the response.</p>");
         rawCode = "";
         bodyContent = false;
     };
@@ -981,22 +980,22 @@ Apigee.APIModel.Editor = function() {
      * Constructs all necessary params and make an AJAX call to proxy or display validation error message.
      */
     this.sendRequest = function() {
-        jQuery("#working_alert").fadeIn(); // Show working alert message.
-        jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
-        jQuery("#request_response_container .request").html("<p>Make a request and see the response.</p>");
-        var templateInputElements = jQuery("[data-role='method_url_container'] span.template_param");
+        $("#working_alert").fadeIn(); // Show working alert message.
+        $("#request_response_container .response").html("<p>Make a request and see the response.</p>");
+        $("#request_response_container .request").html("<p>Make a request and see the response.</p>");
+        var templateInputElements = $("[data-role='method_url_container'] span.template_param");
         if (templateInputElements.length >= 1) { // Check if template param available.
             // Stores the template param name and values in local storage, if user modified the default template param value.
             // Loop through the template params and check against local stroage variable.
             if (localStorage.hasOwnProperty('templateParams')) {
                 var templateParams = JSON.parse(localStorage.getItem('templateParams'));
-                jQuery("[data-role='method_url_container'] span.template_param").each(function() {
-                    var inputElementName = jQuery(this).siblings("span").attr('data-role');
-                    var inputElementValue = jQuery(this).text();
-                    if (inputElementName == inputElementValue || inputElementValue == "" || jQuery(this).html() == "&nbsp;") {
+                $("[data-role='method_url_container'] span.template_param").each(function() {
+                    var inputElementName = $(this).siblings("span").attr('data-role');
+                    var inputElementValue = $(this).text();
+                    if (inputElementName == inputElementValue || inputElementValue == "" || $(this).html() == "&nbsp;") {
                         isTemplateParamMissing = true;
                         templateParamMissing.push(inputElementName.substring(1,inputElementName.length-1));
-                        jQuery(this).addClass('error');
+                        $(this).addClass('error');
                     }
                     var isModified = false;
                     for (var i=0; i<templateParams.length; i++) {
@@ -1016,8 +1015,8 @@ Apigee.APIModel.Editor = function() {
                 localStorage.setItem("templateParams",JSON.stringify(templateParams));
             } else {
                 var templateParamArray = [];
-                jQuery("[data-role='method_url_container'] input").each(function() {
-                var spanElement = jQuery(this).siblings("span");
+                $("[data-role='method_url_container'] input").each(function() {
+                var spanElement = $(this).siblings("span");
                     templateParamArray.push({"name":spanElement.attr("data-role"),"value":spanElement.html()});
                 });
                 localStorage.setItem("templateParams",JSON.stringify(templateParamArray)); // Create local storage variable and assign the values.
@@ -1025,80 +1024,86 @@ Apigee.APIModel.Editor = function() {
         }
 
         //change the variable name to Target URL.
-        var urlToTest = jQuery("[data-role='method_url_container']").text();
-        var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
+        var urlToTest = $("[data-role='method_url_container']").text();
+    
+
+        console.log("urlToTest: " + urlToTest);  // TODO: this url to test var has the stuff i need. i need to remove everything before v1 and append everything after it to MY url to test
+
+
+        var methodVerb = $.trim($("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
 
         var headersList = [];
         // Loop through the header params and identify if required params are empty otherwise add header params in the list.
-        if (jQuery("[data-role='header-param-list']").length) {
-            jQuery("[data-role='header-param-list']").each(function(i, obj) {
-                var headerParamName = jQuery(this).find("[data-role='name']").text();
+        if ($("[data-role='header-param-list']").length) {
+            $("[data-role='header-param-list']").each(function(i, obj) {
+                var headerParamName = $(this).find("[data-role='name']").text();
                 var headerParamValue;
-                if (jQuery(this).find("[data-role='multiple-value']").length) {
-                    headerParamValue = jQuery(this).find("select option:selected").val();
+                if ($(this).find("[data-role='multiple-value']").length) {
+                    headerParamValue = $(this).find("select option:selected").val();
                     headerParamValue = (headerParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : headerParamValue;
                 } else {
-                    headerParamValue = jQuery(this).find("[data-role='value']").val();
+                    headerParamValue = $(this).find("[data-role='value']").val();
                 }
                 headersList.push({"name" : headerParamName, "value" : headerParamValue});
-                if (jQuery(this).find("span.required").length && jQuery(this).find("[data-role='value']").val() == "") {
+                if ($(this).find("span.required").length && $(this).find("[data-role='value']").val() == "") {
                     isHeaderParamMissing = true;
                     headerParamMissing.push(headerParamName);
-                    jQuery(this).find("[data-role='value']").addClass('error');
+                    $(this).find("[data-role='value']").addClass('error');
                 }
             });
         }
         var queryParamString = "";
         // Loop through the query params and identify if required params are empty otherwise add query params in the list.
-        if (jQuery("[data-role='query-param-list']").length >= 1) {
+        if ($("[data-role='query-param-list']").length >= 1) {
             var isFistParam = true;
-            jQuery("[data-role='query-param-list']").each(function(i, obj) {
-                var queryParamName = jQuery(this).find("[data-role='name']").text();
+            $("[data-role='query-param-list']").each(function(i, obj) {
+                var queryParamName = $(this).find("[data-role='name']").text();
                 var queryParamValue;
-                if (jQuery(this).find("[data-role='multiple-value']").length) {
-                    queryParamValue = jQuery(this).find("select option:selected").val();
+                if ($(this).find("[data-role='multiple-value']").length) {
+                    queryParamValue = $(this).find("select option:selected").val();
                     queryParamValue = (queryParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : queryParamValue;
                 } else {
-                    queryParamValue = jQuery(this).find("[data-role='value']").val();
+                    queryParamValue = $(this).find("[data-role='value']").val();
                 }
                 
-                if (jQuery.trim(queryParamValue).length >= 1) {
+                if ($.trim(queryParamValue).length >= 1) {
+                    console.log("Modified queryParamString");
                     var separator = (isFistParam) ? "" : "&";
                     queryParamString += separator + queryParamName + "=" + encodeURIComponent(decodeURIComponent(queryParamValue));
                     isFistParam = false;
                 }
                 
-                if (jQuery(this).find("span.required").length && queryParamValue == "") {
+                if ($(this).find("span.required").length && queryParamValue == "") {
                     isQueryParamMissing = true;
                     queryParamMissing.push(queryParamName);
-                    jQuery(this).find("[data-role='value']").addClass('error');
+                    $(this).find("[data-role='value']").addClass('error');
                 }
             });
         }
         var errorMessage = "";
-        var paramGroups = jQuery("[data-role='param-groups']");
+        var paramGroups = $("[data-role='param-groups']");
         if (paramGroups.length) {
             paramGroups.each(function(i, obj) {
-                var paramGroup = jQuery(this);
+                var paramGroup = $(this);
                 var maxChoice = (paramGroup.find("[data-role='maxChoice']").length) ? parseInt(paramGroup.find("[data-role='maxChoice']").text()) : paramGroup.find("[data-role='param-group-list']").length;
                 var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0;
                 var counter = 0;
                 var paramGroupMissing = [];
                 if (paramGroup.find("[data-role='param-group-list']").length) {
                     paramGroup.find("[data-role='param-group-list']").each(function(i, obj) {
-                        var paramGroupName = jQuery(this).find("[data-role='name']").text();
-                        var paramGroupValue = jQuery(this).find("[data-role='value']").val();
-                        var paramGroupType = jQuery(this).find("[data-role='type']").text().toLowerCase();
-                        if (jQuery.trim(paramGroupValue).length >= 1) {
+                        var paramGroupName = $(this).find("[data-role='name']").text();
+                        var paramGroupValue = $(this).find("[data-role='value']").val();
+                        var paramGroupType = $(this).find("[data-role='type']").text().toLowerCase();
+                        if ($.trim(paramGroupValue).length >= 1) {
                             counter++;
                             if (paramGroupType == "query") {
-                                var separator = (jQuery.trim(queryParamString).length) ? "&" : "";
+                                var separator = ($.trim(queryParamString).length) ? "&" : "";
                                 queryParamString += separator + paramGroupName + "=" + encodeURIComponent(decodeURIComponent(paramGroupValue));
                             } else if (paramGroupType == "header") {
                                 headersList.push({"name" : paramGroupName, "value" : paramGroupValue});
                             }
                         } else {
-                            paramGroupMissing.push(jQuery.trim(paramGroupName));
+                            paramGroupMissing.push($.trim(paramGroupName));
                         }
                     });
                 }
@@ -1117,7 +1122,7 @@ Apigee.APIModel.Editor = function() {
                 separator = (index == 0 ) ? separator : "&";
                 var customTokenName = key;
                 var customTokenValue = customTokenObject.tokenMap[key];
-                if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
+                if($.trim(customTokenName) != "" && $.trim(customTokenValue) != "") {
                     queryParamString += separator + customTokenName + "=" + customTokenValue;
                     index++;
                 }
@@ -1126,17 +1131,18 @@ Apigee.APIModel.Editor = function() {
             for (var key in customTokenObject.tokenMap) {
                 var customTokenName = key;
                 var customTokenValue = customTokenObject.tokenMap[key];
-                if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
+                if($.trim(customTokenName) != "" && $.trim(customTokenValue) != "") {
                     headersList.push({"name" : customTokenName, "value" : customTokenValue});
                 }
             }
         }
-        if (jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9 && jQuery("[data-role='body-param-list']").length) {
+        if ($.browser.msie && parseInt($.browser.version) <= 9 && $("[data-role='body-param-list']").length) {
             headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
         }
         urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
-        urlToTest = jQuery.trim(urlToTest);
-        queryParamString = jQuery.trim(queryParamString);
+        console.log("urlToTest: " + urlToTest);
+        urlToTest = $.trim(urlToTest);
+        queryParamString = $.trim(queryParamString);
 
         if (queryParamString != "") {
             var separator = "?";
@@ -1155,8 +1161,8 @@ Apigee.APIModel.Editor = function() {
             errorMessage += "Missing value for required header parameter(s):&nbsp;<span>"+headerParamMissing.join(", ")+"</span></br>";
         }
         if (errorMessage != "") { // Display error message, if any of the required param is missing.
-            jQuery("body").scrollTop(0);
-            jQuery("[data-role='error_container']").html(errorMessage).show();;
+            $("body").scrollTop(0);
+            $("[data-role='error_container']").html(errorMessage).show();;
             self.clearMissingArray();
         }
         if (selectedAuthScheme  == "basicauth") { // Add basic details in send request proxy API call.
@@ -1164,14 +1170,14 @@ Apigee.APIModel.Editor = function() {
                 if(localStorage.apisBasicAuthDetails && apiName==localStorage.apisBasicAuthDetails.split("@@@")[0]) {
                     if (basicAuth != localStorage.apisBasicAuthDetails.split("@@@")[2]) {
                         basicAuth = localStorage.apisBasicAuthDetails.split("@@@")[2]
-                        jQuery("[data-role='basic_auth_container']").find(".link_open_basicauth").html(localStorage.apisBasicAuthDetails.split("@@@")[1]);
+                        $("[data-role='basic_auth_container']").find(".link_open_basicauth").html(localStorage.apisBasicAuthDetails.split("@@@")[1]);
                     }
                 }
                 headersList.push({"name" : "Authorization", "value" : basicAuth});
             }
         } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
             if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
-                var credentialObj = jQuery.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
+                var credentialObj = $.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
                 if (credentialObj.accessToken != oauth2Credentials.accessToken) {
                     oauth2Credentials = credentialObj;
                 }
@@ -1190,82 +1196,85 @@ Apigee.APIModel.Editor = function() {
             if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
             }
-            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1";
+            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + queryParamString;
+            console.log("queryParamString: " + queryParamString);
         } 
 
-        console.log("@ 1196: " + urlToTest);
+        console.log("urlToTest: " + urlToTest);
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-        console.log("@ 1199: " + urlToTest);
+        console.log("urlToTest: " + urlToTest);
         urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-        console.log("@ 1201: " + urlToTest);
+        console.log("urlToTest: " + urlToTest);
 
         // If a method has an attachment, we need to modify the standard AJAX the following way.
         var bodyPayload = null;
         var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
         var processDataValue = true;
-        if (jQuery("[data-role='attachments-list']").length || (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='body-param-list']").length)) {
+        if ($("[data-role='attachments-list']").length || ($('[data-role="request-payload-example"]').length && $("[data-role='body-param-list']").length)) {
             var multiPartTypes = "";
-            if (jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9) {
+            if ($.browser.msie && parseInt($.browser.version) <= 9) {
                 if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
                     self.showUnsupportedAttachementAlertMessage();
                 }
-                jQuery("#working_alert").fadeOut();
+                $("#working_alert").fadeOut();
                 return;
             }
-            if (jQuery("[data-role='body-param-list']").length) {
-                var formParams = jQuery("#formParams").serialize();
-                if (!jQuery("#formAttachment input[name='root-fields']").length) {
-                    jQuery("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
+            if ($("[data-role='body-param-list']").length) {
+                var formParams = $("#formParams").serialize();
+                if (!$("#formAttachment input[name='root-fields']").length) {
+                    $("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
                 } else {
-                    jQuery("#formAttachment input[name='root-fields']").val(formParams);
+                    $("#formAttachment input[name='root-fields']").val(formParams);
                 }
                 multiPartTypes = "param"; 
-                if (jQuery('[data-role="request-payload-example"]').length || jQuery("[data-role='attachments-list']").length) {
-                    multiPartTypes += (jQuery('[data-role="request-payload-example"]').length) ? "+text" : "";
-                    multiPartTypes += (jQuery("[data-role='attachments-list']").length) ? "+attachment" : "";
+                if ($('[data-role="request-payload-example"]').length || $("[data-role='attachments-list']").length) {
+                    multiPartTypes += ($('[data-role="request-payload-example"]').length) ? "+text" : "";
+                    multiPartTypes += ($("[data-role='attachments-list']").length) ? "+attachment" : "";
                     urlToTest += "&multiparttypes="+multiPartTypes;
-                    console.log("@ 1207: " + urlToTest);
+                    console.log("urlToTest" + urlToTest);
                 }
             } else {
                 for (var i=0,l=headersList.length; i<l; i++) {
                     if (headersList[i].name == "Content-Type") {
+                        console.log("Splicing headers");
                         headersList.splice(i,1);
                     }
                 }
-                if (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='attachments-list']").length) {
+                if ($('[data-role="request-payload-example"]').length && $("[data-role='attachments-list']").length) {
                     urlToTest += "&multiparttypes=text+attachment";
-                    console.log("@ 1217: " + urlToTest);
+                    console.log("urlToTest" + urlToTest);
                 }
             }
 
-            if (jQuery('[data-role="request-payload-example"]').length) {
-                if (!jQuery("#formAttachment textarea[name='text']").length) {
-                    if (jQuery("#formAttachment input[name='root-fields']").length) {
-                        jQuery("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
+            if ($('[data-role="request-payload-example"]').length) {
+                console.log("Shit went down"); // TODO delete
+                if (!$("#formAttachment textarea[name='text']").length) {
+                    if ($("#formAttachment input[name='root-fields']").length) {
+                        $("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
                     } else {
-                        jQuery("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
+                        $("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
                     }    
                 } else {
-                    jQuery("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
+                    $("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
                 }
             }
-            if (jQuery("#formParams").length) {
-                bodyPayload = new FormData(jQuery("form")[1]); // Create an arbitrary FormData instance
+            if ($("#formParams").length) {
+                bodyPayload = new FormData($("form")[1]); // Create an arbitrary FormData instance
             } else {
-                bodyPayload = new FormData(jQuery("form")[0]); // Create an arbitrary FormData instance
+                bodyPayload = new FormData($("form")[0]); // Create an arbitrary FormData instance
             }
             contentTypeValue = false;
             processDataValue = false;
             
-        } else if (jQuery("[data-role='body-param-list']").length) {
-            if (jQuery("#formParams").length) {
-                bodyPayload = jQuery("#formParams").serialize();
+        } else if ($("[data-role='body-param-list']").length) {
+            if ($("#formParams").length) {
+                bodyPayload = $("#formParams").serialize();
             } else {
-                bodyPayload = jQuery("#formAttachment").serialize();
+                bodyPayload = $("#formAttachment").serialize();
             }
         } else { // If a method does not have attach, use standard makeAJAXCall() method to send request.
-            if (jQuery('[data-role="request-payload-example"]').length) {
+            if ($('[data-role="request-payload-example"]').length) {
                 bodyPayload = window.apiModelEditor.getRequestPayLoad();
             }
         }
@@ -1278,18 +1287,18 @@ Apigee.APIModel.Editor = function() {
      * The request and response content are shown in Prism editor.
      */
     this.renderRequest = function(data) {
-        var responseContainerElement = jQuery("[data-role='response-container']");
-        var requestContainerElement = jQuery("[data-role='request-container']");
+        var responseContainerElement = $("[data-role='response-container']");
+        var requestContainerElement = $("[data-role='request-container']");
         if (data == "" || data == null) {
             requestContainerElement.html("<strong> An internal error has occurred. Please retry your request.</strong>");
             responseContainerElement.html("<strong> An internal error has occurred. Please retry your request.</strong>");
             return;
         }
         if (typeof data != "object") {
-            data = jQuery.parseJSON(data); // Parse the JSON.
+            data = $.parseJSON(data); // Parse the JSON.
         }
         rawCode = unescape(data.responseContent); // Stores response content.
-        //rawCode = jQuery.parseJSON(rawCode); //:TODO:: check the proxy and fix the issue and remove it.
+        //rawCode = $.parseJSON(rawCode); //:TODO:: check the proxy and fix the issue and remove it.
         //rawCode = unescape(rawCode.responseContent); //:TODO:: check the proxy and fix the issue and remove it.
         // Response line fine details contruction.
         var responseContainerString = "<strong";
@@ -1341,7 +1350,7 @@ Apigee.APIModel.Editor = function() {
             if (rawCode) {
                 var forJSON = true;
                 try {
-                    var tmp = jQuery.parseJSON(rawCode);
+                    var tmp = $.parseJSON(rawCode);
                 }
                 catch (e) {
                     forJSON = false;
@@ -1387,7 +1396,7 @@ Apigee.APIModel.Editor = function() {
         if (bodyContent) {
             var forJSON = true;
             try {
-                tmp = jQuery.parseJSON(bodyContent);
+                tmp = $.parseJSON(bodyContent);
             }
             catch (e) {
                 forJSON = false;
@@ -1413,7 +1422,7 @@ Apigee.APIModel.Editor = function() {
     this.clearErrorContainer = function() {
         self.clearMissingBooleanVariables();
         self.clearMissingArray();
-        jQuery("[data-role='error_container']").hide().html("");
+        $("[data-role='error_container']").hide().html("");
     };
 
     /**
@@ -1435,7 +1444,7 @@ Apigee.APIModel.Editor = function() {
         queryParamMissing = [];
         requestBodyMissing = "";
     };
-    
+
     this.updateAuthModalFooter = function(modalClassName) {
         var localStorageVariable;
         switch(modalClassName) {
@@ -1453,11 +1462,11 @@ Apigee.APIModel.Editor = function() {
         console.log(localStorageVariable);
 
         if (localStorage.getItem(localStorageVariable)) {
-            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials or token for 30 days.');
-        } else if (!jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p input").length){
-            jQuery("[data-role='"+modalClassName+"']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials or token for 30 days.');
+            $("[data-role='"+modalClassName+"']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials or token for 30 days.');
+        } else if (!$("[data-role='"+modalClassName+"']").find(".modal-footer p input").length){
+            $("[data-role='"+modalClassName+"']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials or token for 30 days.');
         }
-        jQuery("[data-role='"+modalClassName+"']").modal('show');
+        $("[data-role='"+modalClassName+"']").modal('show');
     };
 
     /**
@@ -1472,7 +1481,7 @@ Apigee.APIModel.Editor = function() {
         } else {
             oauth2Credentials = obj;
             selectedAuthScheme = "oauth2";
-            var rememberCheckbox = jQuery("[data-role='oauth2_modal']").find("#chk_remember").is(":checked");
+            var rememberCheckbox = $("[data-role='oauth2_modal']").find("#chk_remember").is(":checked");
             if (rememberCheckbox) {
                 var date = new Date();
                 var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -1490,18 +1499,18 @@ Apigee.APIModel.Editor = function() {
      * The auth scheme container click event handler - sets clicked auth scheme as selected auth scheme.
      */
     this.toggleAuthScheme = function(e) {
-        jQuery("[data-role='authentication_container'] .well").removeClass("selected");
-        jQuery(this).addClass("selected");
-        if (jQuery(this).hasClass("basicauth")) {
+        $("[data-role='authentication_container'] .well").removeClass("selected");
+        $(this).addClass("selected");
+        if ($(this).hasClass("basicauth")) {
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "basicauth";
             selectedAuthScheme = "basicauth";
-        } else if (jQuery(this).hasClass("oauth2")){
+        } else if ($(this).hasClass("oauth2")){
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "oauth2";
             selectedAuthScheme = "oauth2";
-        } else if (jQuery(this).hasClass("customtoken")){
+        } else if ($(this).hasClass("customtoken")){
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "customtoken";
             selectedAuthScheme = "customtoken";
-        } else if (jQuery(this).hasClass("passwordgrant")) {
+        } else if ($(this).hasClass("passwordgrant")) {
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant";
             selectedAuthScheme = "passwordgrant";
         }
@@ -1518,25 +1527,25 @@ Apigee.APIModel.Editor = function() {
             sessionStorage.removeItem('apisOAuth2CredentialsDetails');
             localStorage.removeItem('apisOAuth2CredentialsDetails');
             oauth2Credentials  = null;
-            jQuery("[data-role='oauth2_container']").find(".link_open_oauth2").html("Set...").attr('title','Set OAuth 2 credentials.');
-            jQuery("[data-role='oauth2_container']").find(".icon-remove").css('display','none');
+            $("[data-role='oauth2_container']").find(".link_open_oauth2").html("Set...").attr('title','Set OAuth 2 credentials.');
+            $("[data-role='oauth2_container']").find(".icon-remove").css('display','none');
         } else if (type == "basicauth"){
             basicAuth = "";
             userEmail = "";
             sessionStorage.removeItem('apisBasicAuthDetails');
             localStorage.removeItem('apisBasicAuthDetails');
-            jQuery("[data-role='basic_auth_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
-            jQuery("[data-role='basic_auth_container']").find(".icon-remove").css('display','none');
+            $("[data-role='basic_auth_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
+            $("[data-role='basic_auth_container']").find(".icon-remove").css('display','none');
         } else if (type == "customtoken") {
             sessionStorage.removeItem('revisionsCustomTokenCredentialsDetails');
-            jQuery("[data-role='custom_token_container']").find(".link_open_customtoken").html("Set...").attr('title','Set custom token credentials.');
-            jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
+            $("[data-role='custom_token_container']").find(".link_open_customtoken").html("Set...").attr('title','Set custom token credentials.');
+            $("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
             isCutomTokenShown = false;
         } else if (type == "passwordgrant") {         // TODO: TEST this - it adds password grant support to this
             sessionStorage.removeItem('apisPasswordGrantCredentials');
             localStorage.removeItem('apisPasswordGrantCredentials');
-            jQuery("[data-role='password_grant_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
-            jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','none');
+            $("[data-role='password_grant_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
+            $("[data-role='password_grant_container']").find(".icon-remove").css('display','none');
         }
         Apigee.APIModel.initMethodsAuthDialogsEvents(); // Re initialize events after the change.
     };
@@ -1585,19 +1594,19 @@ Apigee.APIModel.InlineEdit = function() {
             if (scope == "resource") {
                 searchTerm = "[data-scope='resource']";
             }
-            jQuery("[data-role='template-params']").find(searchTerm).each(function(index) {
+            $("[data-role='template-params']").find(searchTerm).each(function(index) {
                 templateParamAvailable = true;
-                paramString += '{"name" :"' + jQuery(this).find("[data-role='name']").text() + '",';
-                paramString += '"description" :"' + jQuery(this).find("[data-role='description']").text() + '",';
-                if (jQuery(this).find("[data-role='required']").length) {
-                    paramString += '"required" : ' + jQuery(this).find("[data-role='required']").text() + ',';
+                paramString += '{"name" :"' + $(this).find("[data-role='name']").text() + '",';
+                paramString += '"description" :"' + $(this).find("[data-role='description']").text() + '",';
+                if ($(this).find("[data-role='required']").length) {
+                    paramString += '"required" : ' + $(this).find("[data-role='required']").text() + ',';
                 }
-                if (jQuery(this).find("[data-role='defaultValue']").length) {
-                    paramString += '"defaultValue" :"' + jQuery(this).find("[data-role='defaultValue']").text() + '",';
+                if ($(this).find("[data-role='defaultValue']").length) {
+                    paramString += '"defaultValue" :"' + $(this).find("[data-role='defaultValue']").text() + '",';
                 }
                 paramString += '"type" :"TEMPLATE",';
                 paramString += '"dataType" :"string"}';
-                var noOfParam = jQuery("[data-role='template-params']").find(searchTerm).length;
+                var noOfParam = $("[data-role='template-params']").find(searchTerm).length;
                 if (noOfParam > (index+1) ) {
                     paramString += ',';
                 }
@@ -1614,8 +1623,8 @@ Apigee.APIModel.InlineEdit = function() {
         if (templateParamAvailable) {
             paramString += ","
         }
-        jQuery(liEmenets).each(function(index) {
-            var currentLIElement = jQuery(this);
+        $(liEmenets).each(function(index) {
+            var currentLIElement = $(this);
             typeVal = paramType;
             if (paramType == "general") {
                 typeVal = (currentLIElement.attr('data-role') == "query-param-list") ? "QUERY" : "HEADER";
@@ -1624,16 +1633,16 @@ Apigee.APIModel.InlineEdit = function() {
             var paramName;
             var descriptionValue;
             if (currentLIElement.find("div.title input[data-role='value']").length) {
-                paramName = jQuery.trim(currentLIElement.find("div.title input[data-role='value']").val());
+                paramName = $.trim(currentLIElement.find("div.title input[data-role='value']").val());
             } else {
-                paramName = jQuery.trim(currentLIElement.find("div.title span[data-role='name']").text());
+                paramName = $.trim(currentLIElement.find("div.title span[data-role='name']").text());
             }
             if (currentLIElement.find("div.description textarea").length) {
-                descriptionValue = jQuery.trim(currentLIElement.find("div.description textarea").val());
+                descriptionValue = $.trim(currentLIElement.find("div.description textarea").val());
             } else {
-                descriptionValue = jQuery.trim(currentLIElement.find("[data-role='description']").html());
+                descriptionValue = $.trim(currentLIElement.find("[data-role='description']").html());
                 if (currentEdiatableElement.is(currentLIElement.find("[data-role='description']"))) {
-                    descriptionValue = jQuery.trim(currentLIElement.find("[data-role='description']").text());
+                    descriptionValue = $.trim(currentLIElement.find("[data-role='description']").text());
                 }
             }
             descriptionValue = JSON.stringify(descriptionValue);
@@ -1643,8 +1652,8 @@ Apigee.APIModel.InlineEdit = function() {
             paramString += '"description" :"' + descriptionValue + '",';
             paramString += '"required" : ' + requiredParam + ',';
             if (paramType == "attachments") {
-                paramString += '"sampleFileUrl" : "' + jQuery.trim(currentLIElement.find("[data-role='value']").attr('data-sample-file-url')) +'",';
-                paramString += '"contentDisposition" : "' + jQuery.trim(currentLIElement.find("[data-role='value']").attr('data-content-disposition')) + '"}';
+                paramString += '"sampleFileUrl" : "' + $.trim(currentLIElement.find("[data-role='value']").attr('data-sample-file-url')) +'",';
+                paramString += '"contentDisposition" : "' + $.trim(currentLIElement.find("[data-role='value']").attr('data-content-disposition')) + '"}';
 
             } else {
                 paramString += '"type" :"'+ typeVal +'",';
@@ -1652,7 +1661,7 @@ Apigee.APIModel.InlineEdit = function() {
                 paramString += '"dataType" :"string"}';
             }
 
-            var noOfParam = jQuery(liEmenets).length;
+            var noOfParam = $(liEmenets).length;
             if (noOfParam > (index+1) ) {
                 paramString += ',';
             }
@@ -1662,11 +1671,11 @@ Apigee.APIModel.InlineEdit = function() {
     }
 
     function constructParamGroups(scope) {
-        var paramGroups = jQuery("[data-role='param-groups'][data-scope='"+scope+"']");
+        var paramGroups = $("[data-role='param-groups'][data-scope='"+scope+"']");
         var paramString = "";
         if (paramGroups.length) {
             paramGroups.each(function(i, obj) {
-                var paramGroup = jQuery(this);
+                var paramGroup = $(this);
                 paramString += '{';
                 if (paramGroup.find("[data-role='maxChoice']").length) {
                   paramString += ' "maxChoice" : '+ parseInt(paramGroup.find("[data-role='maxChoice']").text());
@@ -1680,16 +1689,16 @@ Apigee.APIModel.InlineEdit = function() {
                 //jsonBody += ' "choice" : '+choice+', "parameters" : [ ';
                 if (paramGroup.find("[data-role='param-group-list']").length) {
                     paramGroup.find("[data-role='param-group-list']").each(function(index, obj) {
-                        var currentLIElement = jQuery(this);
-                        var paramGroupName = jQuery.trim(currentLIElement.find("[data-role='name']").text());
-                        var paramGroupValue = jQuery.trim(currentLIElement.find("[data-role='value']").val());
-                        var paramGroupType = jQuery.trim(currentLIElement.find("[data-role='type']").text());
+                        var currentLIElement = $(this);
+                        var paramGroupName = $.trim(currentLIElement.find("[data-role='name']").text());
+                        var paramGroupValue = $.trim(currentLIElement.find("[data-role='value']").val());
+                        var paramGroupType = $.trim(currentLIElement.find("[data-role='type']").text());
                         paramGroupType = paramGroupType.toUpperCase();
                         var descriptionValue;
                         if (currentLIElement.find("div.description textarea").length) {
-                            descriptionValue = jQuery.trim(currentLIElement.find("div.description textarea").val());
+                            descriptionValue = $.trim(currentLIElement.find("div.description textarea").val());
                         } else {
-                            descriptionValue = jQuery.trim(currentLIElement.find("div.description").text());
+                            descriptionValue = $.trim(currentLIElement.find("div.description").text());
                         }
                         descriptionValue = JSON.stringify(descriptionValue);
                         descriptionValue = descriptionValue.substring(1,descriptionValue.length-1); //Check if this required.
@@ -1718,7 +1727,7 @@ Apigee.APIModel.InlineEdit = function() {
     }
 
     function updateParms(currentLIElement, data) {
-        var paramName = jQuery.trim(currentLIElement.find("[data-role='name']").text());
+        var paramName = $.trim(currentLIElement.find("[data-role='name']").text());
         var paramStyle = "";
         var paramObject;
         if (currentLIElement.attr('data-role') == 'query-param-list') {
@@ -1761,11 +1770,11 @@ Apigee.APIModel.InlineEdit = function() {
 
     function checkAdminCredentials() {
         if (localStorage.orgAdminBasicAuthDetails) {
-            jQuery("[data-role='edit_auth_modal']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials for 30 days.');
-        } else if (!jQuery("[data-role='edit_auth_modal']").find(".modal-footer p input").length){
-            jQuery("[data-role='edit_auth_modal']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials for 30 days.');
+            $("[data-role='edit_auth_modal']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials for 30 days.');
+        } else if (!$("[data-role='edit_auth_modal']").find(".modal-footer p input").length){
+            $("[data-role='edit_auth_modal']").find(".modal-footer p").append('<br><input type="checkbox" id="chk_remember"> Remember credentials for 30 days.');
         }
-        jQuery("[data-role='edit_auth_modal']").modal('show'); // Open pop up basic authentication dialog.
+        $("[data-role='edit_auth_modal']").modal('show'); // Open pop up basic authentication dialog.
     }
 
     //Public methods.
@@ -1794,7 +1803,7 @@ Apigee.APIModel.InlineEdit = function() {
         Fields('edit_auth_modal');
         if (errMessage == "") {
             var windowLocation = window.location.href;
-            var dataObj = "password="+ jQuery.trim(jQuery("[data-role='edit_auth_modal']").find("#inputPassword").val());
+            var dataObj = "password="+ $.trim($("[data-role='edit_auth_modal']").find("#inputPassword").val());
             if (Apigee.APIModel.authUrl != "null") {
                 var authUrl = Apigee.APIModel.authUrl.replace("{user}",encodeURIComponent(userEmail));
                 var headersList = [];
@@ -1804,13 +1813,13 @@ Apigee.APIModel.InlineEdit = function() {
                 self.saveAdminCredentials();
             }
         } else {
-            jQuery("[data-role='edit_auth_modal'] .error_container").html(errMessage+"Please try again.").show();
+            $("[data-role='edit_auth_modal'] .error_container").html(errMessage+"Please try again.").show();
         }
     };
 
     this.saveAdminCredentials = function() {
-        basicAuth = "Basic "+jQuery.base64Encode(userEmail+':'+ jQuery.trim(jQuery("[data-role='edit_auth_modal']").find("#inputPassword").val()));
-        var rememberCheckbox = jQuery("[data-role='edit_auth_modal']").find("#chk_remember").is(":checked");
+        basicAuth = "Basic "+$.base64Encode(userEmail+':'+ $.trim($("[data-role='edit_auth_modal']").find("#inputPassword").val()));
+        var rememberCheckbox = $("[data-role='edit_auth_modal']").find("#chk_remember").is(":checked");
         if (rememberCheckbox) {
             var date = new Date();
             var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -1824,9 +1833,9 @@ Apigee.APIModel.InlineEdit = function() {
     };
     this.showUnauthorizedInfo = function(errorCode) {
         if (errorCode == "401") {
-            jQuery("[data-role='edit_auth_modal'] .error_container").html("Invalid credentials. Please try again.").show();
+            $("[data-role='edit_auth_modal'] .error_container").html("Invalid credentials. Please try again.").show();
         } else {
-            jQuery("[data-role='edit_auth_modal'] .error_container").html("Error saving details. Please try again.").show();
+            $("[data-role='edit_auth_modal'] .error_container").html("Error saving details. Please try again.").show();
         }
     };
     /**
@@ -1852,15 +1861,15 @@ Apigee.APIModel.InlineEdit = function() {
         if (orgAdminCredentials !== "") {
             basicAuth = orgAdminCredentials.split("@@@")[0];
             var emailString = orgAdminCredentials.split("@@@")[1];
-            jQuery(".admin_auth_section a.auth_admin_email").html(emailString).show();
-            jQuery(".admin_auth_section .icon-remove").css('display','inline-block');
-            jQuery(".admin_auth_section").show().removeClass("hide");
+            $(".admin_auth_section a.auth_admin_email").html(emailString).show();
+            $(".admin_auth_section .icon-remove").css('display','inline-block');
+            $(".admin_auth_section").show().removeClass("hide");
         } else {
             localStorage.removeItem("orgAdminBasicAuthDetails")
             sessionStorage.removeItem("orgAdminBasicAuthDetails");
-            jQuery(".admin_auth_section a.auth_admin_email").html("").hide();
-            jQuery(".admin_auth_section .icon-remove").hide();
-            jQuery(".admin_auth_section").show().removeClass("hide");;
+            $(".admin_auth_section a.auth_admin_email").html("").hide();
+            $(".admin_auth_section .icon-remove").hide();
+            $(".admin_auth_section").show().removeClass("hide");;
         };
         if (!isAdminAuthModalReopened) {
             self.constructEditMode();
@@ -1871,8 +1880,8 @@ Apigee.APIModel.InlineEdit = function() {
      */
     this.clearAdminAuthDetails = function() {
         clearEditSessions();
-        jQuery(this).siblings("a.auth_admin_email").html("").hide();
-        jQuery(this).hide();
+        $(this).siblings("a.auth_admin_email").html("").hide();
+        $(this).hide();
     };
     /**
      * The method handles reseting the inline edit basic auth.
@@ -1890,33 +1899,33 @@ Apigee.APIModel.InlineEdit = function() {
      * Append textarea to method desction, request payload sample, response payload sample elements.
      */
     this.constructEditMode = function() {
-        jQuery("#method_content").addClass("edit_mode");
+        $("#method_content").addClass("edit_mode");
         var editIconHTML = '<a class="allow_edit hover"></a><a class="allow_edit ok" title="save and quit."></a><a class="allow_edit cancel" title="reset and quit."></a>';
-        jQuery(".edit_mode .resource_details").parent().addClass("clearfix");
-        jQuery(".edit_mode .resource_details").children("div").addClass("clearfix");
-        jQuery("[data-role='method-title']").parent().append(editIconHTML).addClass("clearfix");
-        jQuery(".description_container").addClass("clearfix");
-        jQuery("ul.method_table").parent().css({"clear":"both"});
+        $(".edit_mode .resource_details").parent().addClass("clearfix");
+        $(".edit_mode .resource_details").children("div").addClass("clearfix");
+        $("[data-role='method-title']").parent().append(editIconHTML).addClass("clearfix");
+        $(".description_container").addClass("clearfix");
+        $("ul.method_table").parent().css({"clear":"both"});
         // Append edit HTML to header and query params.
-        if (jQuery("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='param-group-list'], [data-role='response_errors_list'], [data-role='attachments-list'] ").length) {
-            jQuery("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='param-group-list'], [data-role='response_errors_list'], [data-role='attachments-list']").each(function(i, obj) {
-                jQuery(this).find("[data-role='description']").parent().append(editIconHTML);
+        if ($("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='param-group-list'], [data-role='response_errors_list'], [data-role='attachments-list'] ").length) {
+            $("[data-role='query-param-list'],[data-role='header-param-list'], [data-role='body-param-list'], [data-role='param-group-list'], [data-role='response_errors_list'], [data-role='attachments-list']").each(function(i, obj) {
+                $(this).find("[data-role='description']").parent().append(editIconHTML);
             });
         }
-        //jQuery("[data-scope='resource']").find("[data-role='description']").removeAttr("data-allow-edit"); // Remove edit mode to resource level params.
+        //$("[data-scope='resource']").find("[data-role='description']").removeAttr("data-allow-edit"); // Remove edit mode to resource level params.
         // Request payload description related changes.
-        jQuery(".description_container").append('<textarea class="resource_description_edit">'+jQuery("[data-role='method-description']").html()+'</textarea>'+editIconHTML);
-        var requestPayLoadDocsContainer = jQuery("[data-role='request-payload-docs']");
+        $(".description_container").append('<textarea class="resource_description_edit">'+$("[data-role='method-description']").html()+'</textarea>'+editIconHTML);
+        var requestPayLoadDocsContainer = $("[data-role='request-payload-docs']");
         requestPayLoadDocsContainer.wrap("<div class='clearfix'></div>");
         requestPayLoadDocsContainer.attr("data-allow-edit","true");
         requestPayLoadDocsContainer.parent().append('<textarea class="request_payload_doc_edit"></textarea>'+editIconHTML);
         // Request payload sample related changes.
-        var requestPayLoadExampleContainer = jQuery("[data-role='request-payload-example']");
+        var requestPayLoadExampleContainer = $("[data-role='request-payload-example']");
         requestPayLoadExampleContainer.wrap("<div class='clearfix'></div>")
         requestPayLoadExampleContainer.attr("data-allow-edit","true").width(600).css({'float':'left'});
         requestPayLoadExampleContainer.parent().append(editIconHTML);
         // Response payload description related changes.
-        var responsePayLoadDocsContainer = jQuery("[data-role='response-payload-docs']");
+        var responsePayLoadDocsContainer = $("[data-role='response-payload-docs']");
         responsePayLoadDocsContainer.wrap("<div class='clearfix'></div>");
         responsePayLoadDocsContainer.attr("data-allow-edit","true");
         responsePayLoadDocsContainer.parent().append('<textarea class="response_payload_doc_edit"></textarea>'+editIconHTML);
@@ -1927,10 +1936,10 @@ Apigee.APIModel.InlineEdit = function() {
      * The Mouse over event handler for editable element, shows the edit icon.
      */
     this.handleEditPropertiesMouseOver = function() {
-        var dataRole = jQuery(this).attr("data-role");
-        if (!jQuery(this).hasClass("editing")) {
-            jQuery(this).addClass('edit');
-            jQuery(this).siblings("a.allow_edit.hover").css({'display':'inline-block'});
+        var dataRole = $(this).attr("data-role");
+        if (!$(this).hasClass("editing")) {
+            $(this).addClass('edit');
+            $(this).siblings("a.allow_edit.hover").css({'display':'inline-block'});
         }
     };
 
@@ -1938,10 +1947,10 @@ Apigee.APIModel.InlineEdit = function() {
      * The Mouse out event handler for editable element, hides the edit icon.
      */
     this.handleEditPropertiesMouseOut = function() {
-        var dataRole = jQuery(this).attr("data-role");
-        if (!jQuery(this).hasClass("editing")) {
-            jQuery(this).removeClass('edit');
-            jQuery(this).siblings("a.allow_edit.hover").hide();
+        var dataRole = $(this).attr("data-role");
+        if (!$(this).hasClass("editing")) {
+            $(this).removeClass('edit');
+            $(this).siblings("a.allow_edit.hover").hide();
         }
     };
 
@@ -1952,55 +1961,55 @@ Apigee.APIModel.InlineEdit = function() {
     this.handleEditableElementsClick = function(e) {
         var dateRoleFlag = false;
         if(currentEdiatableElement) {
-            if (jQuery(this).attr('data-role') == "description" && !currentEdiatableElement.is(jQuery(this))) {
+            if ($(this).attr('data-role') == "description" && !currentEdiatableElement.is($(this))) {
                 dateRoleFlag = true;
             } else {
-                dateRoleFlag = currentEdiatableElement.attr('data-role')!=jQuery(this).attr('data-role')
+                dateRoleFlag = currentEdiatableElement.attr('data-role')!=$(this).attr('data-role')
             }
         }
-        jQuery("[data-role='error_container']").hide().html("");
+        $("[data-role='error_container']").hide().html("");
         if (currentEdiatableElementValue != "" && editingFlag && currentEdiatableElement != null && dateRoleFlag ) {
-            var previsionEditableElementValue = jQuery.trim(currentEdiatableElement.text());
+            var previsionEditableElementValue = $.trim(currentEdiatableElement.text());
             if (currentEdiatableElement.siblings("textarea").length) {
-                previsionEditableElementValue = jQuery.trim(currentEdiatableElement.siblings("textarea").val());
+                previsionEditableElementValue = $.trim(currentEdiatableElement.siblings("textarea").val());
             }
             if (currentEdiatableElementValue != previsionEditableElementValue) {
-                jQuery("[data-role='confirm_modal']").modal('show');
+                $("[data-role='confirm_modal']").modal('show');
                 Apigee.APIModel.initInlineEditAdminAuthEvents();
-            } else if (!currentEdiatableElement.is(jQuery(this))) {
+            } else if (!currentEdiatableElement.is($(this))) {
                 self.resetEditableElement();
             }
         } else {
-            currentEdiatableElement = jQuery(this);
-            if (!descriptionEditFlag && jQuery(this).attr('data-role') == 'description') {
+            currentEdiatableElement = $(this);
+            if (!descriptionEditFlag && $(this).attr('data-role') == 'description') {
                 currentEdiatableElement.text(currentEdiatableElement.html());
                 descriptionEditFlag = true;
             }
-            currentEdiatableElementValue = jQuery.trim(jQuery(this).text());
-            if (jQuery(this).hasClass("resource_description") || jQuery(this).attr('data-role') == "request-payload-docs" || jQuery(this).attr('data-role') == "response-payload-docs") {
-                currentEdiatableElementValue = jQuery.trim(jQuery(this).html());
-                jQuery(this).hide();
-jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(jQuery(this).height()+30).show();
-                jQuery(this).siblings("textarea").focus();
-                jQuery(this).siblings("textarea").unbind("click").click(function() {
+            currentEdiatableElementValue = $.trim($(this).text());
+            if ($(this).hasClass("resource_description") || $(this).attr('data-role') == "request-payload-docs" || $(this).attr('data-role') == "response-payload-docs") {
+                currentEdiatableElementValue = $.trim($(this).html());
+                $(this).hide();
+$(this).siblings("textarea").val($.trim($(this).html())).height($(this).height()+30).show();
+                $(this).siblings("textarea").focus();
+                $(this).siblings("textarea").unbind("click").click(function() {
                     return false;
                 });
                 Apigee.APIModel.initInlineEditAdminAuthEvents();
             }
-            if (jQuery(this).attr('data-role') == "method-title" || jQuery(this).attr('data-role') == 'description') {
-                jQuery(this).attr('contenteditable','true');
+            if ($(this).attr('data-role') == "method-title" || $(this).attr('data-role') == 'description') {
+                $(this).attr('contenteditable','true');
             } else {
-                jQuery("[data-role='method-title']").removeAttr('contenteditable');
+                $("[data-role='method-title']").removeAttr('contenteditable');
             }
-            jQuery(this).addClass("editing");
+            $(this).addClass("editing");
             // Hide other editable elements icons.
-            jQuery(this).siblings("a.allow_edit.hover").hide();
+            $(this).siblings("a.allow_edit.hover").hide();
             // Show OK, Cancel icon to current element.
-            jQuery(this).siblings('a.allow_edit.ok').show();
-            jQuery(this).siblings('a.allow_edit.cancel').show();
-            jQuery(this).addClass("edit"); // Add a class called 'edit'.
+            $(this).siblings('a.allow_edit.ok').show();
+            $(this).siblings('a.allow_edit.cancel').show();
+            $(this).addClass("edit"); // Add a class called 'edit'.
             editingFlag = true;
-            jQuery(this).focus();
+            $(this).focus();
         }
         e.preventDefault();
         return false;
@@ -2017,7 +2026,7 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             currentEdiatableElement.html(currentEdiatableElementValue);
         }
         if (currentEdiatableElement.attr('data-role') == "method-description") {
-            jQuery("textarea.resource_description_edit").val(currentEdiatableElementValue)
+            $("textarea.resource_description_edit").val(currentEdiatableElementValue)
         }
         currentEdiatableElement.removeClass("edit").removeClass("editing");
         if (currentEdiatableElement.hasClass("resource_description") || currentEdiatableElement.attr('data-role') == "request-payload-docs" || currentEdiatableElement.attr('data-role') == "response-payload-docs") {
@@ -2034,8 +2043,8 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         if(currentEdiatableElement) {
             currentEdiatableElement.removeClass("editing");
         }
-        if (currentEdiatableElementValue != "" && jQuery("body").children("[role='dialog'].modal").is(":visible") == false) {
-            jQuery("[data-role='confirm_modal']").modal('show');
+        if (currentEdiatableElementValue != "" && $("body").children("[role='dialog'].modal").is(":visible") == false) {
+            $("[data-role='confirm_modal']").modal('show');
             Apigee.APIModel.initInlineEditAdminAuthEvents();
         }
     }
@@ -2083,13 +2092,13 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
                 operationPath = Apigee.APIModel.apiModelBaseUrl + "/v1/o/" + Apigee.APIModel.organizationName + "/apimodels/"+Apigee.APIModel.apiName+"/revisions/"+Apigee.APIModel.revisionNumber+"/resources/"+Apigee.APIModel.resourceId+"/methods/"+ Apigee.APIModel.methodId;
             }
             // Description text construction.
-            var descriptionText =  jQuery.trim(jQuery("textarea.resource_description_edit").val());
+            var descriptionText =  $.trim($("textarea.resource_description_edit").val());
             if (currentEdiatableElement.attr("data-role") != "method-description") {
-                descriptionText =  jQuery.trim(jQuery(".resource_description ").html());
+                descriptionText =  $.trim($(".resource_description ").html());
             }
             
             // Authentication value construction.
-            var authenticationValue = jQuery("[data-role='auth-type']").text()
+            var authenticationValue = $("[data-role='auth-type']").text()
 
             authenticationValue = authenticationValue.replace("Basic Auth","BASICAUTH").replace("Custom Token","CUSTOM").replace( "OAuth 1","OAUTH1WEBSERVER").replace("OAuth 1 Client Credentials","OAUTH1CLIENTCREDENTIALS").replace("OAuth 2","OAUTH2WEBSERVER").replace("OAuth 2 Client Credentials","OAUTH2CLIENTCREDENTIALS").replace("OAuth 2 Implicit Grant Flow","OAUTH2IMPLICITGRANT").replace("No auth","NOAUTH").replace("Password Grant", "PASSWORDGRANT");
             var authtenticationString = "";
@@ -2108,7 +2117,7 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             }
             //authtenticationString = authtenticationString.replace("NOAUTH","PUBLIC");
             // Categories value construction.
-            var categoriesValue = jQuery.trim(jQuery("[data-role='category']").text());
+            var categoriesValue = $.trim($("[data-role='category']").text());
             var categoriesString = "";
             if (categoriesString.split(",").length > 1) {
                 categoriesString = '[';
@@ -2127,13 +2136,13 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             descriptionText = descriptionText.substring(1,descriptionText.length-1); //Check if this required.
             descriptionText = self.escapeSpecialChars(descriptionText)
             // Construct the AJAX method body.
-            jsonBody = '{ "displayName":"'+ jQuery.trim(jQuery("[data-role='method-title']").html()) +'", "description": "' + descriptionText  + '","verb": "'+jQuery.trim(jQuery("[data-role='verb']").text()) + '",';
+            jsonBody = '{ "displayName":"'+ $.trim($("[data-role='method-title']").html()) +'", "description": "' + descriptionText  + '","verb": "'+$.trim($("[data-role='verb']").text()) + '",';
             jsonBody += '"authSchemes" : ' + authtenticationString + ', "tags" : ' + categoriesString;
             var contentTypeValue  = "";
             //jsonBody += ' "request": { ';
-            if (jQuery.trim(jQuery("[data-role='content-type']").text()) != "N.A.") {
-                //jsonBody += '"contentType" : "'+ jQuery.trim(jQuery("[data-role='content-type']").text()) + '",';
-                contentTypeValue = jQuery.trim(jQuery("[data-role='content-type']").text());
+            if ($.trim($("[data-role='content-type']").text()) != "N.A.") {
+                //jsonBody += '"contentType" : "'+ $.trim($("[data-role='content-type']").text()) + '",';
+                contentTypeValue = $.trim($("[data-role='content-type']").text());
             }
             //jsonBody += '}';
             // Header, Query params contruction excluding the resource level params.
@@ -2159,7 +2168,7 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
 
             jsonBody += ', "contentType":"' + contentTypeValue + '"';
             // Request payload sample contruction.
-            if (jQuery('[data-role="request-payload-example"]').length) {
+            if ($('[data-role="request-payload-example"]').length) {
                 var requestPayload = JSON.stringify(window.apiModelEditor.getRequestPayLoad());
                 requestPayload = requestPayload.substring(1,requestPayload.length-1); //Check if this required.
                 requestPayload = self.escapeSpecialChars(requestPayload)
@@ -2169,15 +2178,15 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
 
             //jsonBody += '"customAttributes" : [';
             // Request/Response payload description construction.
-            var requestPayloadDocElement = jQuery("[data-role='request-payload-docs']");
-            var responsePayloadDocElement = jQuery("[data-role='response-payload-docs']");
+            var requestPayloadDocElement = $("[data-role='request-payload-docs']");
+            var responsePayloadDocElement = $("[data-role='response-payload-docs']");
             var requestPayloadDocValue = "";
             var responsePayloadDocValue = "";
 
             if (requestPayloadDocElement.length) {
-                var requestPayloadDocValue = jQuery.trim(requestPayloadDocElement.html());
+                var requestPayloadDocValue = $.trim(requestPayloadDocElement.html());
                 if (requestPayloadDocElement.siblings("textarea").is(":visible") == true) {
-                    requestPayloadDocValue =  jQuery.trim(requestPayloadDocElement.siblings("textarea").val());
+                    requestPayloadDocValue =  $.trim(requestPayloadDocElement.siblings("textarea").val());
                 }
                 requestPayloadDocValue = JSON.stringify(requestPayloadDocValue);
                 requestPayloadDocValue = requestPayloadDocValue.substring(1,requestPayloadDocValue.length-1); //Check if this required.
@@ -2187,31 +2196,31 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
                 jsonBody += requestPayloadDocValue;
             }
             jsonBody += ' }';
-            var reponseErrorsElement = jQuery("[data-role='response_errors_list']");
+            var reponseErrorsElement = $("[data-role='response_errors_list']");
             if (responsePayloadDocElement.length || reponseErrorsElement.length) {
                 jsonBody += ', "response": {';
                 if (responsePayloadDocElement.length) {
-                    var responsePayloadDocValue = jQuery.trim(responsePayloadDocElement.html());
+                    var responsePayloadDocValue = $.trim(responsePayloadDocElement.html());
                     if (responsePayloadDocElement.siblings("textarea").is(":visible") == true) {
-                        responsePayloadDocValue =  jQuery.trim(responsePayloadDocElement.siblings("textarea").val());
+                        responsePayloadDocValue =  $.trim(responsePayloadDocElement.siblings("textarea").val());
                     }
                     responsePayloadDocValue = JSON.stringify(responsePayloadDocValue);
                     responsePayloadDocValue = responsePayloadDocValue.substring(1,responsePayloadDocValue.length-1); //Check if this required.
                     responsePayloadDocValue = self.escapeSpecialChars(responsePayloadDocValue);
 
-                    var responsePayload = JSON.stringify(jQuery("[data-role='response-payload']").val());
+                    var responsePayload = JSON.stringify($("[data-role='response-payload']").val());
                     responsePayload = responsePayload.substring(1,responsePayload.length-1); //Check if this required.
                     responsePayload = self.escapeSpecialChars(responsePayload);
-                    jsonBody += '"doc": "' + responsePayloadDocValue + '"  ,"sample" : "' + responsePayload + '", "contentType" : "' + jQuery("[data-role='response-content-type']").text() + '"';
+                    jsonBody += '"doc": "' + responsePayloadDocValue + '"  ,"sample" : "' + responsePayload + '", "contentType" : "' + $("[data-role='response-content-type']").text() + '"';
                 }
                 if (reponseErrorsElement.length) {
                     var paramString = '';
-                    jQuery(reponseErrorsElement).each(function(index) {
-                        var currentElement = jQuery(this);
-                        paramString += '{"httpStatusCode" :"' + jQuery.trim(currentElement.find("[data-role='http_status_code']").html()) + '",';
-                        paramString += '"code" : "' + jQuery.trim(currentElement.find("[data-role='code']").html()) + '",';
-                        paramString += '"description" :"' + jQuery.trim(currentElement.find("[data-role='description']").html()) + '"}';
-                        var noOfParam = jQuery(reponseErrorsElement).length;
+                    $(reponseErrorsElement).each(function(index) {
+                        var currentElement = $(this);
+                        paramString += '{"httpStatusCode" :"' + $.trim(currentElement.find("[data-role='http_status_code']").html()) + '",';
+                        paramString += '"code" : "' + $.trim(currentElement.find("[data-role='code']").html()) + '",';
+                        paramString += '"description" :"' + $.trim(currentElement.find("[data-role='description']").html()) + '"}';
+                        var noOfParam = $(reponseErrorsElement).length;
                         if (noOfParam > (index+1) ) {
                             paramString += ',';
                         }
@@ -2229,23 +2238,23 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         if(localStorage.orgAdminBasicAuthDetails) {
             if (basicAuth != localStorage.orgAdminBasicAuthDetails.split("@@@")[0]) {
                 basicAuth = localStorage.orgAdminBasicAuthDetails.split("@@@")[0];
-                jQuery(".admin_auth_section a.auth_admin_email").html(localStorage.orgAdminBasicAuthDetails.split("@@@")[1]);
+                $(".admin_auth_section a.auth_admin_email").html(localStorage.orgAdminBasicAuthDetails.split("@@@")[1]);
             }
         }
         headersList.push({"name" : "Authorization", "value" : basicAuth});
         headersList.push({"name" : "Content-Type", "value" : "application/json"});
-        jQuery("#working_alert").fadeIn();
+        $("#working_alert").fadeIn();
         operationPath = Apigee.APIModel.proxyURL+"?targeturl="+operationPath;
         self.makeAJAXCall({"url":operationPath,type:"put",dataType:"json","headers": headersList, data:jsonBody,"callback":self.handleAPICallSuccess, "errorCallback" :self.handleUpdateFailure });
 
-        jQuery(this).siblings("[contenteditable='true']").removeClass("edit");
-        jQuery(this).siblings("a.allow_edit.cancel").hide();
-        jQuery(this).siblings("a.allow_edit.ok").hide();
-        if (jQuery(this).siblings("textarea").is(":visible")) {
-            jQuery(this).siblings("textarea").hide();
-            jQuery(this).siblings("[data-allow-edit='true']").html(jQuery(this).siblings("textarea").val()).removeClass("edit").removeClass("editing").show();
+        $(this).siblings("[contenteditable='true']").removeClass("edit");
+        $(this).siblings("a.allow_edit.cancel").hide();
+        $(this).siblings("a.allow_edit.ok").hide();
+        if ($(this).siblings("textarea").is(":visible")) {
+            $(this).siblings("textarea").hide();
+            $(this).siblings("[data-allow-edit='true']").html($(this).siblings("textarea").val()).removeClass("edit").removeClass("editing").show();
         }
-        jQuery(this).hide();
+        $(this).hide();
         e.stopPropagation();
         return false;
     };
@@ -2258,12 +2267,12 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         descriptionEditFlag = false;
         data = unescape(data.responseContent);
         data = JSON.parse(data);
-        currentEdiatableElementValue = jQuery.trim(currentEdiatableElement.html());
-        jQuery("[data-role='method-title']").html(data.displayName);
-        jQuery("[data-role='method-description']").html(data.description); // Set the description.
+        currentEdiatableElementValue = $.trim(currentEdiatableElement.html());
+        $("[data-role='method-title']").html(data.displayName);
+        $("[data-role='method-description']").html(data.description); // Set the description.
         // Set the query/header param values.
-        jQuery("[data-role='query-param-list'], [data-role='header-param-list'], [data-role='body-param-list'], [data-role='response_errors_list'], [data-role='attachments-list']").each(function(index) {
-            updateParms(jQuery(this), data)
+        $("[data-role='query-param-list'], [data-role='header-param-list'], [data-role='body-param-list'], [data-role='response_errors_list'], [data-role='attachments-list']").each(function(index) {
+            updateParms($(this), data)
         });
         if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
             var windowURL = window.location.href;
