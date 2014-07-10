@@ -911,16 +911,9 @@ Apigee.APIModel.Methods = function() {
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
             
-            error = !validateEmail(userEmail);
-
-            // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
-            
             var access_token = $("#inToken")[0].value;
             console.log("access_token: " + access_token);
-            // TODO: implement: if (rememberCheckbox) save token locally
-
             var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-
             if (rememberCheckbox) {
                 var date = new Date();
                 var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -930,14 +923,13 @@ Apigee.APIModel.Methods = function() {
                 sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
             }
 
+            // TODO: show the icon to clear the storage- give that option
+
             /* closing dance */
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "passwordgrant";
             self.updateAuthContainer();
-
-            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();
-
 
             // TODO: add new ROPC grant (?) for password_grant_modal --> test this now
         }
