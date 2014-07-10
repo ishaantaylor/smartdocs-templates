@@ -568,10 +568,10 @@ Apigee.APIModel.Methods = function() {
     this.handlePWG = function() {
         // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
             // make an ajax call to get the token
-            userEmail = $("#inEmail")[0].value;
-            var inputData = "grant_type=password&username=" + userEmail + "&password=";
-
-        if (true /* TODO: valid password && valid username (valid doesnt mean authenticated) OR OR OR figure out what may cause an error and put a preventetive condition here*/) {
+        userEmail = $("#inEmail")[0].value;
+        var inputData = "grant_type=password&username=" + userEmail + "&password=";
+        var error = Apigee.APIModel.Common.validateEmail(userEmail);
+        if (!error) {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
@@ -598,6 +598,8 @@ Apigee.APIModel.Methods = function() {
 
                 },
             });
+        } else {
+            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials! " + error).show();
         }
     }
 
@@ -835,7 +837,7 @@ Apigee.APIModel.Methods = function() {
      */
     this.swapSampleRequestResponseContainer = function() {
         var $currentElement = $(this);
-        if ($currentElement.attr('id') ==  'link_request_tab') { // Show the request
+        if ($currentElement.attr('id') == 'link_request_tab') { // Show the request
             $("#link_response_tab").removeClass('selected');
             $("#request_response_container .response").hide();
             $("#request_response_container .request").show();
@@ -852,12 +854,16 @@ Apigee.APIModel.Methods = function() {
      */
     this.saveAuthModal = function(e) {
         var parentClass = $(this).parents(".modal");
+        var error = false;
         if (parentClass.attr('data-role') == 'basic_auth_modal') {
             var errMessage = self.validateBasicAuthFields('basic_auth_modal'); // Validate email and password.
             if (errMessage == "") { // If there are no errors.
                 userEmail = $("#inputEmail").val();
                 basicAuth = "Basic "+$.base64Encode(userEmail+':'+$("#inputPassword").val());
                 var rememberCheckbox = $("[data-role='basic_auth_modal']").find("#chk_remember").is(":checked");
+
+                alert("checked: " + rememberCheckbox);
+
                 if (rememberCheckbox) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -899,19 +905,15 @@ Apigee.APIModel.Methods = function() {
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
             
+            error = !validateEmail(userEmail);
 
             // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var access_token = $("#inToken")[0].value;
             console.log("access_token: " + access_token);
             // TODO: implement: if (rememberCheckbox) save token locally
-            var storage;
+
             var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-            if (rememberCheckbox) {
-                storage = localStorage;
-            } else {
-                storage = sessionStorage;
-            }
 
             if (rememberCheckbox) {
                 var date = new Date();
@@ -928,8 +930,13 @@ Apigee.APIModel.Methods = function() {
             selectedAuthScheme = "passwordgrant";
             self.updateAuthContainer();
 
+            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();
+
+
             // TODO: add new ROPC grant (?) for password_grant_modal --> test this now
         }
+
+
     };
 
     /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
@@ -1218,14 +1225,14 @@ Apigee.APIModel.Methods = function() {
             } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
-
         } else {
 
                 // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearererer auth
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
 
             var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-            if (rememberCheckbox && localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+
+            if (localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 var tok = localStorage.apisPasswordGrantCredentials.split("@@@")[2];
                 headersList.push({"name" : "Authorization", "value" : tok });
                 console.log("pushed localStorage auth header");
@@ -1233,7 +1240,6 @@ Apigee.APIModel.Methods = function() {
                 var tok = sessionStorage.apisPasswordGrantCredentials.split("@@@")[2];
                 headersList.push({"name" : "Authorization", "value" : tok });
                 console.log("pushed sessionStorage auth header");
-
             }
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
         }
@@ -1241,7 +1247,8 @@ Apigee.APIModel.Methods = function() {
         // check if theres a bad authorization header
         if (headersList[headersList.length-1].value == "Bearer ") {
             // TODO: show error here and dont let this request send
-            alert("shit");
+            $("error_container").val("Please choose an authentication method");
+
         }
 
         targetUrl = urlToTest;
