@@ -42,7 +42,7 @@ Apigee.APIModel.Common = function() {
      * @param {String} elementValue An email ID value.
      * @return {Boolean} true if it is a valid email address, otherwise returns false.
      */
-    validateEmail = function(elementValue) {
+    this.validateEmail = function(elementValue) {
         var flag = false;
         if ($.trim(elementValue).length > 1) { // Chceck if it is empty.
             var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
@@ -570,8 +570,18 @@ Apigee.APIModel.Methods = function() {
             // make an ajax call to get the token
         userEmail = $("#inEmail")[0].value;
         var inputData = "grant_type=password&username=" + userEmail + "&password=";
-        var error = Apigee.APIModel.Common.validateEmail(userEmail);
-        if (!error) {
+        function validateEmail(elementValue) {
+            var flag = false;
+            if ($.trim(elementValue).length > 1) { // Chceck if it is empty.
+                var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
+                if (regEx.test(elementValue)) {
+                    if(elementValue.indexOf("..")==-1) flag = true;
+                }
+            }
+            return flag;
+        };
+        var validEmail = validateEmail(userEmail);
+        if (validEmail && $("#inPassword")[0].value != "") {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
@@ -587,19 +597,15 @@ Apigee.APIModel.Methods = function() {
                     $("#inEmail").val("");
                 },
                 error: function (jqXHR, status, error) { 
-                    // TODO: make this such that if theres an error it will just say it on the modal
-
-                    // self.showError(jqXHR.error_description);
-                    // error handler
+                    $("[role='dialog'].modal .error_container").html(error).show();
                     // console.log(status);
-                    // console.log(error);
                     // console.log(jqXHR.responseText);
                     // console.log(jqXHR.getAllResponseHeaders());
 
                 },
             });
         } else {
-            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials! " + error).show();
+            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();                
         }
     }
 
