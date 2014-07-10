@@ -420,8 +420,6 @@ Apigee.APIModel.Methods = function() {
     var customTokenObject = {};
     var isCutomTokenShown = false;
     var custemTokenCredentials = "";
-    var rememberCheckbox = false;
-
     var selectedAuthScheme = "";        // Holds selected auth scheme name.
     var windowLocation = window.location.href; // Current window URL.
     var apiName = Apigee.APIModel.apiName; // Stores the apiName rendered from template.
@@ -437,13 +435,10 @@ Apigee.APIModel.Methods = function() {
         // Convert the auth type value as user friendly text.
         var authTypeElement = $("[data-role='auth-type']");
         authType = $.trim(authTypeElement.text());
-        console.log("authType: " + authType);
         if (authType.split(",").length > 1) {
             authType = authType.substr(0,authType.length-1); // Remove the last extra comma symbol.
         }
         authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","Password Grant").replace("PASSWORDGRANT", "Password Grant").replace("NOAUTH","No auth");
-
-        console.log("authType: " + authType);
 
         authTypeElement.html(authType); // Update the auth type HTML element.
 
@@ -454,24 +449,16 @@ Apigee.APIModel.Methods = function() {
             resourceURLString += '<span data-role="'+ $(this).attr('data-role') + '">' +$(this).html() + '</span>';
         });
 
-        console.log("resourceURLString: " + resourceURLString);
-
         $("[data-role='method_url_container']").html(resourceURLString);
         // Template parameter releated changes.
         methodURLElement = $("[data-role='method_url_container']");
         // Add tooltip to template params.
 
-        console.log(methodURLElement);
-
         methodURLElement.html(methodURLElement.html().replace(/\{/g,"<span data-toggle='tooltip' data-original-title=''><span class='template_param' contenteditable='true'>{").replace(/\}/g,"}</span><span></span></span>"));
-
-        console.log(methodURLElement);
 
         methodURLElement.find("span.template_param").each(function() {
             $(this).siblings("span").attr("data-role",$(this).text());
         });
-
-        console.log("methodURLElement[0].value: " + methodURLElement[0].value);
 
         // Create a sibling node to each template param and add original value to the siblings.
         // Original value will be used while validating template params.
@@ -545,6 +532,7 @@ Apigee.APIModel.Methods = function() {
         Apigee.APIModel.initMethodsPageEvents();
         Apigee.APIModel.initMethodsAuthDialogsEvents();
     };
+
     /**
      * Success callback method of a proxy URL AJAX call.
      * @param {Object} data - response content of a proxy URL AJAX call.
@@ -555,6 +543,7 @@ Apigee.APIModel.Methods = function() {
         Apigee.APIModel.authUrl = data.authUrl;
         Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
     }
+
     /**
      * Success callback method of a OAuth2 web serser auth URL AJAX call.
      * @param {Object} data - response content of OAuth2 web serser auth URL AJAX call.
@@ -579,8 +568,8 @@ Apigee.APIModel.Methods = function() {
     this.handlePWG = function() {
         // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
             // make an ajax call to get the token
-            var email = $("#inEmail")[0].value;
-            var inputData = "grant_type=password&username=" + email + "&password=";
+            userEmail = $("#inEmail")[0].value;
+            var inputData = "grant_type=password&username=" + userEmail + "&password=";
 
         if (true /* TODO: valid password && valid username (valid doesnt mean authenticated) OR OR OR figure out what may cause an error and put a preventetive condition here*/) {
             $.ajax({
@@ -596,7 +585,6 @@ Apigee.APIModel.Methods = function() {
                     $("#inToken").val(data.access_token);
                     $("#inPassword").val("");
                     $("#inEmail").val("");
-
                 },
                 error: function (jqXHR, status, error) { 
                     // TODO: make this such that if theres an error it will just say it on the modal
@@ -815,7 +803,7 @@ Apigee.APIModel.Methods = function() {
                         passwordGrantCredentials = localStorage.apisPasswordGrantCredentials;
                     }
                 } else if (sessionStorage.apisPasswordGrantCredentials) {
-                        passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
+                    passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
                 }
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
@@ -915,11 +903,26 @@ Apigee.APIModel.Methods = function() {
             // var passwordGrantURL = "https://moearthnetworks-test.apigee.net/purina" + "/v1";    // TODO: this must be the url that validates the tokens | this if statement will  --> no.. just must save variables to local storage and update container for the request function to then use 
             
             var access_token = $("#inToken")[0].value;
-            
-            // TODO: implement: if (remember_checkbox) save token locally
+            console.log("access_token: " + access_token);
+            // TODO: implement: if (rememberCheckbox) save token locally
+            var storage;
+            var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+            if (rememberCheckbox) {
+                storage = localStorage;
+            } else {
+                storage = sessionStorage;
+            }
+
+            if (rememberCheckbox) {
+                var date = new Date();
+                var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                localStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token + "@@@" + dateString;
+            } else {
+                localStorage.removeItem("apisPasswordGrantCredentials");
+                sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
+            }
 
             /* closing dance */
-            sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer" + access_token;
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
             selectedAuthScheme = "passwordgrant";
@@ -1013,6 +1016,7 @@ Apigee.APIModel.Methods = function() {
      */
     this.sendRequest = function() {
         $("#working_alert").fadeIn(); // Show working alert message.
+        self.updateAuthContainer();
         $("#request_response_container .response").html("<p>Make a request and see the response.</p>");
         $("#request_response_container .request").html("<p>Make a request and see the response.</p>");
         var templateInputElements = $("[data-role='method_url_container'] span.template_param");
@@ -1215,19 +1219,30 @@ Apigee.APIModel.Methods = function() {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
 
-        } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
+        } else {
 
                 // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearererer auth
-
-            if (sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
-                if ()
-                passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
-                headersList.push({"name" : "Authorization", "value" : "Bearer " + passwordGrantCredentials /*.accessToken*/});
+
+            var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+            if (rememberCheckbox && localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+                var tok = localStorage.apisPasswordGrantCredentials.split("@@@")[2];
+                headersList.push({"name" : "Authorization", "value" : tok });
+                console.log("pushed localStorage auth header");
+            } else if (!rememberCheckbox && sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+                var tok = sessionStorage.apisPasswordGrantCredentials.split("@@@")[2];
+                headersList.push({"name" : "Authorization", "value" : tok });
+                console.log("pushed sessionStorage auth header");
+
             }
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+        }
 
-        } 
+        // check if theres a bad authorization header
+        if (headersList[headersList.length-1].value == "Bearer ") {
+            // TODO: show error here and dont let this request send
+            alert("shit");
+        }
 
         targetUrl = urlToTest;
         urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
@@ -1499,7 +1514,6 @@ Apigee.APIModel.Methods = function() {
                 localStorageVariable = "apisOAuth2CredentialsDetails";
                 break;
         }
-        console.log(localStorageVariable);
 
         if (localStorage.getItem(localStorageVariable)) {
             $("[data-role='"+modalClassName+"']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials or token for 30 days.');
