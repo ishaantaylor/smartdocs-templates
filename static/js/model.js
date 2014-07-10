@@ -110,11 +110,9 @@ Apigee.APIModel.Common = function() {
                 var forJSON = true;
                 try {
                     data = $.parseJSON(xdr.responseText);
-                    console.log(/*"data: " + */data);
                 }
                 catch (e) {
                     forJSON = false;
-                    console.log(e.stack);
                 }
                 if (!forJSON) {
                     request.callback(xdr.responseText);
@@ -588,8 +586,6 @@ Apigee.APIModel.Methods = function() {
                 data: inputData + $("#inPassword")[0].value,
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
-                    // console.log(textStatus);
-                    // console.log(jqXHR);
                     // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
                     
                     $("#inToken").val(data.access_token);
@@ -598,9 +594,6 @@ Apigee.APIModel.Methods = function() {
                 },
                 error: function (jqXHR, status, error) { 
                     $("[role='dialog'].modal .error_container").html(error).show();
-                    // console.log(status);
-                    // console.log(jqXHR.responseText);
-                    // console.log(jqXHR.getAllResponseHeaders());
 
                 },
             });
@@ -816,7 +809,6 @@ Apigee.APIModel.Methods = function() {
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
                     if (apiName == passwordGrantCredentials.split("@@@")[0]) {
-                        console.log("passwordGrantCredentials: " + passwordGrantCredentials);
                         passwordGrantCredentials = $.parseJSON(passwordGrantCredentials.split("@@@")[1]);
                         var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
                         if (selected != "") {
@@ -867,9 +859,6 @@ Apigee.APIModel.Methods = function() {
                 userEmail = $("#inputEmail").val();
                 basicAuth = "Basic "+$.base64Encode(userEmail+':'+$("#inputPassword").val());
                 var rememberCheckbox = $("[data-role='basic_auth_modal']").find("#chk_remember").is(":checked");
-
-                alert("checked: " + rememberCheckbox);
-
                 if (rememberCheckbox) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
@@ -910,28 +899,27 @@ Apigee.APIModel.Methods = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            
             var access_token = $("#inToken")[0].value;
-            console.log("access_token: " + access_token);
-            var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-            if (rememberCheckbox) {
-                var date = new Date();
-                var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
-                localStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token + "@@@" + dateString;
-            } else {
-                localStorage.removeItem("apisPasswordGrantCredentials");
-                sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
+            if (access_token) {
+                var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+                if (rememberCheckbox) {
+                    var date = new Date();
+                    var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                    localStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token + "@@@" + dateString;
+                } else {
+                    localStorage.removeItem("apisPasswordGrantCredentials");
+                    sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
+                }
+
+                // TODO: show the icon to clear the storage- give that option
+
+                /* closing dance */
+                self.closeAuthModal(); 
+                sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
+                selectedAuthScheme = "passwordgrant";
+                self.updateAuthContainer();
             }
 
-            // TODO: show the icon to clear the storage- give that option
-
-            /* closing dance */
-            self.closeAuthModal(); 
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
-            selectedAuthScheme = "passwordgrant";
-            self.updateAuthContainer();
-
-            // TODO: add new ROPC grant (?) for password_grant_modal --> test this now
         }
 
 
@@ -1102,7 +1090,6 @@ Apigee.APIModel.Methods = function() {
                 }
                 
                 if ($.trim(queryParamValue).length >= 1) {
-                    console.log("Modified queryParamString");
                     var separator = (isFistParam) ? "" : "&";
                     queryParamString += separator + queryParamName + "=" + encodeURIComponent(decodeURIComponent(queryParamValue));
                     isFistParam = false;
@@ -1175,7 +1162,6 @@ Apigee.APIModel.Methods = function() {
             headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
         }
         urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
-        console.log("urlToTest: " + urlToTest);
         urlToTest = $.trim(urlToTest);
         queryParamString = $.trim(queryParamString);
 
@@ -1229,103 +1215,103 @@ Apigee.APIModel.Methods = function() {
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
 
             var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-
-            if (localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
-                var tok = localStorage.apisPasswordGrantCredentials.split("@@@")[2];
-                headersList.push({"name" : "Authorization", "value" : tok });
-                console.log("pushed localStorage auth header");
+            var tok = "";
+            var storage = {};
+            if (rememberCheckbox && localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
+                tok = localStorage.apisPasswordGrantCredentials.split("@@@")[2];
+                storage = localStorage;
             } else if (!rememberCheckbox && sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
-                var tok = sessionStorage.apisPasswordGrantCredentials.split("@@@")[2];
-                headersList.push({"name" : "Authorization", "value" : tok });
-                console.log("pushed sessionStorage auth header");
+                tok = sessionStorage.apisPasswordGrantCredentials.split("@@@")[2];
+                storage = sessionStorage;
+            } else {
+                storage = false;
+                tok = "\n";
             }
+            
+            headersList.push({"name" : "Authorization", "value" : tok });
+
             urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
         }
 
         // check if theres a bad authorization header
-        if (headersList[headersList.length-1].value == "Bearer ") {
+        var head = headersList[headersList.length-1].value; 
+        if (head == "Bearer" || head == "Bearer " || head == "" || head == " ") {
             // TODO: show error here and dont let this request send
             $("error_container").val("Please choose an authentication method");
+        } else {
+            targetUrl = urlToTest;
+            urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
+            urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
 
-        }
-
-        targetUrl = urlToTest;
-        urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-        urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-
-        // If a method has an attachment, we need to modify the standard AJAX the following way.
-        var bodyPayload = null;
-        var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
-        var processDataValue = true;
-        if ($("[data-role='attachments-list']").length || ($('[data-role="request-payload-example"]').length && $("[data-role='body-param-list']").length)) {
-            var multiPartTypes = "";
-            if ($.browser.msie && parseInt($.browser.version) <= 9) {
-                if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
-                    self.showUnsupportedAttachementAlertMessage();
+            // If a method has an attachment, we need to modify the standard AJAX the following way.
+            var bodyPayload = null;
+            var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
+            var processDataValue = true;
+            if ($("[data-role='attachments-list']").length || ($('[data-role="request-payload-example"]').length && $("[data-role='body-param-list']").length)) {
+                var multiPartTypes = "";
+                if ($.browser.msie && parseInt($.browser.version) <= 9) {
+                    if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
+                        self.showUnsupportedAttachementAlertMessage();
+                    }
+                    $("#working_alert").fadeOut();
+                    return;
                 }
-                $("#working_alert").fadeOut();
-                return;
-            }
-            if ($("[data-role='body-param-list']").length) {
-                var formParams = $("#formParams").serialize();
-                if (!$("#formAttachment input[name='root-fields']").length) {
-                    $("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
+                if ($("[data-role='body-param-list']").length) {
+                    var formParams = $("#formParams").serialize();
+                    if (!$("#formAttachment input[name='root-fields']").length) {
+                        $("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
+                    } else {
+                        $("#formAttachment input[name='root-fields']").val(formParams);
+                    }
+                    multiPartTypes = "param"; 
+                    if ($('[data-role="request-payload-example"]').length || $("[data-role='attachments-list']").length) {
+                        multiPartTypes += ($('[data-role="request-payload-example"]').length) ? "+text" : "";
+                        multiPartTypes += ($("[data-role='attachments-list']").length) ? "+attachment" : "";
+                        urlToTest += "&multiparttypes="+multiPartTypes;
+                    }
                 } else {
-                    $("#formAttachment input[name='root-fields']").val(formParams);
-                }
-                multiPartTypes = "param"; 
-                if ($('[data-role="request-payload-example"]').length || $("[data-role='attachments-list']").length) {
-                    multiPartTypes += ($('[data-role="request-payload-example"]').length) ? "+text" : "";
-                    multiPartTypes += ($("[data-role='attachments-list']").length) ? "+attachment" : "";
-                    urlToTest += "&multiparttypes="+multiPartTypes;
-                    console.log("urlToTest" + urlToTest);
-                }
-            } else {
-                for (var i=0,l=headersList.length; i<l; i++) {
-                    if (headersList[i].name == "Content-Type") {
-                        console.log("Splicing headers");
-                        headersList.splice(i,1);
+                    for (var i=0,l=headersList.length; i<l; i++) {
+                        if (headersList[i].name == "Content-Type") {
+                            headersList.splice(i,1);
+                        }
+                    }
+                    if ($('[data-role="request-payload-example"]').length && $("[data-role='attachments-list']").length) {
+                        urlToTest += "&multiparttypes=text+attachment";
                     }
                 }
-                if ($('[data-role="request-payload-example"]').length && $("[data-role='attachments-list']").length) {
-                    urlToTest += "&multiparttypes=text+attachment";
-                    console.log("urlToTest" + urlToTest);
-                }
-            }
 
-            if ($('[data-role="request-payload-example"]').length) {
-                console.log("Shit went down"); // TODO delete
-                if (!$("#formAttachment textarea[name='text']").length) {
-                    if ($("#formAttachment input[name='root-fields']").length) {
-                        $("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
+                if ($('[data-role="request-payload-example"]').length) {
+                    if (!$("#formAttachment textarea[name='text']").length) {
+                        if ($("#formAttachment input[name='root-fields']").length) {
+                            $("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
+                        } else {
+                            $("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
+                        }    
                     } else {
-                        $("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
-                    }    
+                        $("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
+                    }
+                }
+                if ($("#formParams").length) {
+                    bodyPayload = new FormData($("form")[1]); // Create an arbitrary FormData instance
                 } else {
-                    $("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
+                    bodyPayload = new FormData($("form")[0]); // Create an arbitrary FormData instance
+                }
+                contentTypeValue = false;
+                processDataValue = false;
+                
+            } else if ($("[data-role='body-param-list']").length) {
+                if ($("#formParams").length) {
+                    bodyPayload = $("#formParams").serialize();
+                } else {
+                    bodyPayload = $("#formAttachment").serialize();
+                }
+            } else { // If a method does not have attach, use standard makeAJAXCall() method to send request.
+                if ($('[data-role="request-payload-example"]').length) {
+                    bodyPayload = window.apiModelEditor.getRequestPayLoad();
                 }
             }
-            if ($("#formParams").length) {
-                bodyPayload = new FormData($("form")[1]); // Create an arbitrary FormData instance
-            } else {
-                bodyPayload = new FormData($("form")[0]); // Create an arbitrary FormData instance
-            }
-            contentTypeValue = false;
-            processDataValue = false;
-            
-        } else if ($("[data-role='body-param-list']").length) {
-            if ($("#formParams").length) {
-                bodyPayload = $("#formParams").serialize();
-            } else {
-                bodyPayload = $("#formAttachment").serialize();
-            }
-        } else { // If a method does not have attach, use standard makeAJAXCall() method to send request.
-            if ($('[data-role="request-payload-example"]').length) {
-                bodyPayload = window.apiModelEditor.getRequestPayLoad();
-            }
+            self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});            
         }
-        console.log(JSON.stringify({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue}));
-        self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});
     };
 
     /**
@@ -1334,7 +1320,6 @@ Apigee.APIModel.Methods = function() {
      * The request and response content are shown in Prism editor.
      */
     this.renderRequest = function(data) {
-        console.log(data);
         var responseContainerElement = $("[data-role='response-container']");
         var requestContainerElement = $("[data-role='request-container']");
         if (data == "" || data == null) {
@@ -1369,7 +1354,6 @@ Apigee.APIModel.Methods = function() {
         // Response headers construction.
         responseContainerString += "<dl>";
 
-        console.log(data.responseHeaders);
 
         for (var i=0; i<data.responseHeaders.length; i++) {
             responseContainerString +=  "<dt>";
@@ -1425,12 +1409,10 @@ Apigee.APIModel.Methods = function() {
         // Request line fine details contruction.
         var hostName = targetUrl.split("//")[1].split("/")[0];
         
-        console.log("hostName: " + hostName);
 
 
         var requestContainerString = "<strong>"+data.requestVerb+" "+ targetUrl.split(hostName)[1] + " HTTP/"+httpVersion+"</strong>";
         
-        console.log(requestContainerString);
 
         // Request headers construction.
         requestContainerString += "<dl>";
@@ -1561,18 +1543,16 @@ Apigee.APIModel.Methods = function() {
         $("[data-role='authentication_container'] .well").removeClass("selected");
         $(this).addClass("selected");
         if ($(this).hasClass("basicauth")) {
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "basicauth";
             selectedAuthScheme = "basicauth";
         } else if ($(this).hasClass("oauth2")){
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "oauth2";
             selectedAuthScheme = "oauth2";
         } else if ($(this).hasClass("customtoken")){
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "customtoken";
             selectedAuthScheme = "customtoken";
         } else if ($(this).hasClass("passwordgrant")) {
-            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant";
             selectedAuthScheme = "passwordgrant";
         }
+        sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + selectedAuthScheme;
+
     };
 
     /**

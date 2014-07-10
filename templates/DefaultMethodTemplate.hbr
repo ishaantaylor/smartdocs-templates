@@ -613,7 +613,7 @@
         <script src="https://smartdocs.apigee.com/3/static/js/codemirror_xml.js" type="text/javascript"></script>
         <script src="https://smartdocs.apigee.com/3/static/js/prism.js" type="text/javascript"></script>
         <script src="https://smartdocs.apigee.com/3/static/js/base64_min.js" type="text/javascript"></script>
-        <script src="https://smartdocs.apigee.com/3/static/js/model.js" type="text/javascript"></script>
-        <script src="https://smartdocs.apigee.com/3/static/js/controller.js" type="text/javascript"></script>
+        <script src="./static/js/controller.js"></script>
+        <script src="./static/js/model.js"></script>
     </body>
 </html>
