@@ -594,7 +594,7 @@ Apigee.APIModel.Methods = function() {
                     $("#inEmail").hide();
                     $("#inPasswordLabel").hide();
                     $("#inPassword").hide();
-                    $("#send_request").hide();
+                    $("#sendPWGmodal").hide();
 
                     // show updated token element
                     $("#inToken").val(data.access_token);
@@ -602,7 +602,7 @@ Apigee.APIModel.Methods = function() {
                     $("#inToken").show();
 
                     // effect is showing save button only when token is there and cleaned up interface
-                    $("sendPWGmodal").show();
+                    $("savePWGmodal").show();
 
                 },
                 error: function (jqXHR, status, error) { 
