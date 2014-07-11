@@ -912,8 +912,8 @@ Apigee.APIModel.Methods = function() {
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
             var access_token = $("#inToken")[0].value;
+            var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
             if (access_token) {
-                var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
                 if (rememberCheckbox) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
