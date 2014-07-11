@@ -47,11 +47,7 @@
                         <div class="title_container">
                             <div class="verb_container">
                                 <p class="verb GET" data-role="verb">GET</p>
-
-
                                 <span class="icon_lock"></span>
-
-
                             </div>
                             <h2 data-role="method-title" data-allow-edit="true">List API Proxies</h2>
                         </div>
@@ -62,50 +58,29 @@
                             <h3>Resource URL</h3>
                             <div class="url_container">
                                 <p data-role="method_url_container">
-
                                     <span data-role="host">https://api.enterprise.apigee.com/v1</span>
                                     <span data-role="path">/organizations/{org_name}/apis</span>
-
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div>
-
-
-
                     <form enctype="multipart/form-data" method="post" name="formAttachment" id="formAttachment">
-
-
-
                         <ul class="method_table">
 
-
-
                         </ul>
-
-
                     </form>
                 </div>
 
-
-
-
-
                 <div class="hide" data-role="template-params">
-
-
                     <p data-scope="resource">
                         <span data-role="name">org_name</span>
                         <span data-role="description">Mention the organization name</span>
                         <span data-role="defaultValue"></span>
                         <span data-role="required">true</span>
                     </p>
-
-
                 </div>
-
 
                 <div class="operation_container">
                     <div class="authentication" data-role="authentication_container">
@@ -139,7 +114,6 @@
                         </div>
                     </div>
                     <button id="send_request">Send this request
-
                         <br/>
                         <span>using the values above</span>
                     </button>
@@ -211,25 +185,23 @@
                     <form class="form-horizontal">
                         <div class="error_container"></div>
                         <div class="form-group">
-                            <label class="control-label" for="inEmail">Email</label>
+                            <label class="control-label" id="inEmailLabel" for="inEmail">Email</label>
                             <input class="form-control" type="text" id="inEmail" placeholder="Email"/>
                         </div>
                         <div class="form-group">
-                            <label class="control-label" for="inPassword">Password</label>
+                            <label class="control-label" id="inPasswordLabel" for="inPassword">Password</label>
                             <input class="form-control" type="password" id="inPassword" placeholder="Password"/>
                         </div>
-                        <div class="form-group">    
-                            <label class="control-label" for="btn btn-primary button_token_request_modal"> Click Me </label><a class="btn btn-primary button_token_request_modal" href="javascript:void(0)">Send Request for Token</a>
-                        </div>
                         <div class="form-group">
-                            <label class="content" for="inToken">Token: </label>
-                            <input class="form-control" type="password" id="inToken" placeholder="Access token"/>
+                            <label class="content" id="inTokenLabel" style="display: none" for="inToken">Token: </label>
+                            <input class="form-control" style="display: none" type="password" id="inToken" placeholder="Access token"/>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <p>Keep your token in a safe place- your credentials will not be saved. </p>
-                    <a class="btn btn-primary button_save_modal" href="javascript:void(0)">Save</a>
+                    <p>Your credentials will not be saved.</p>
+                    <a class="btn btn-primary button_token_request_modal" href="javascript:void(0)">Get Token</a>
+                    <a class="btn btn-primary button_save_modal" id="savePWGmodal" type="hidden" href="javascript:void(0)">Save</a>
                     <a class="button_close_modal" href="javascript:void(0)">Cancel</a>
                 </div>
             </div>

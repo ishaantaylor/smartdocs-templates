@@ -568,17 +568,14 @@ Apigee.APIModel.Methods = function() {
             // make an ajax call to get the token
         userEmail = $("#inEmail")[0].value;
         var inputData = "grant_type=password&username=" + userEmail + "&password=";
-        function validateEmail(elementValue) {
-            var flag = false;
-            if ($.trim(elementValue).length > 1) { // Chceck if it is empty.
-                var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
-                if (regEx.test(elementValue)) {
-                    if(elementValue.indexOf("..")==-1) flag = true;
-                }
+        var validEmail = false;
+        var elementValue = userEmail;
+        if ($.trim(elementValue).length > 1) {  // Chceck if it is empty.
+            var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
+            if (regEx.test(elementValue)) {
+                if(elementValue.indexOf("..")==-1) validEmail = true;
             }
-            return flag;
-        };
-        var validEmail = validateEmail(userEmail);
+        }
         if (validEmail && $("#inPassword")[0].value != "") {
             $.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
@@ -587,18 +584,33 @@ Apigee.APIModel.Methods = function() {
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
                     // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
-                    
-                    $("#inToken").val(data.access_token);
+                                        
+                    // reset values
                     $("#inPassword").val("");
                     $("#inEmail").val("");
+
+                    // hide unnecesary stuff (email, pw, send request button)
+                    $("#inEmailLabel").hide();
+                    $("#inEmail").hide();
+                    $("#inPasswordLabel").hide();
+                    $("#inPassword").hide();
+                    $("#send_request").hide();
+
+                    // show updated token element
+                    $("#inToken").val(data.access_token);
+                    $("#inTokenLabel").show();
+                    $("#inToken").show();
+
+                    // effect is showing save button only when token is there and cleaned up interface
+                    $("sendPWGmodal").show();
+
                 },
                 error: function (jqXHR, status, error) { 
                     $("[role='dialog'].modal .error_container").html(error).show();
-
                 },
             });
         } else {
-            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();                
+            $("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();   
         }
     }
 
@@ -918,6 +930,8 @@ Apigee.APIModel.Methods = function() {
                 sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
                 selectedAuthScheme = "passwordgrant";
                 self.updateAuthContainer();
+            } else {
+                $("[role='dialog'].modal .error_container").html("Please fill out your basic credentials and get a token first!").show();
             }
 
         }
