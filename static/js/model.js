@@ -401,7 +401,8 @@ Apigee.APIModel.Methods = function() {
     var lastModifiedDate;               // Last modified date in readable form.
     var methodURLElement;               // Holds the resource URL element.
     var basicAuth = "";                 // Holds basic auth value.
-    var passwordGrantCredentials = "";  // Holds password grant token (bearer).
+    var passwordGrantCredentials = "";  // Holds password grant credentials.
+    var passwordGrantToken = "";        // Holds password grant token.
     var oauth2Credentials = {};         // Holds OAuth 2 credential details.
     var userEmail = "";                 // Holds user email.
     var authType;                       // Holds auth type details.
@@ -597,7 +598,8 @@ Apigee.APIModel.Methods = function() {
                     $("#sendPWGmodal").hide();
 
                     // show updated token element
-                    $("#inToken").val(data.access_token);
+                    passwordGrantToken = data.access_token;
+                    $("#inToken").val(self.truncateDisplay(data.access_token, 6));
                     $("#inTokenLabel").show();
                     $("#inToken").show();
 
@@ -841,6 +843,7 @@ Apigee.APIModel.Methods = function() {
             Apigee.APIModel.initMethodsAuthDialogsEvents();
         }
     };
+
     /**
      * The request/response link click event handler - Show/Hide request/response tab content, based on the link.
      * @return {Void} Show/Hide request/response tab content.
@@ -911,7 +914,7 @@ Apigee.APIModel.Methods = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            var access_token = $("#inToken")[0].value;
+            var access_token = passwordGrantToken;
             var rememberCheckbox = $("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
             if (access_token) {
                 if (rememberCheckbox) {
@@ -933,10 +936,7 @@ Apigee.APIModel.Methods = function() {
             } else {
                 $("[role='dialog'].modal .error_container").html("Please fill out your basic credentials and get a token first!").show();
             }
-
         }
-
-
     };
 
     /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
@@ -966,6 +966,24 @@ Apigee.APIModel.Methods = function() {
             isCutomTokenShown = true;
         }
     };
+
+    /**
+     *  Takes a token, keeps the first n characters and appends an ellipsis.
+     *  @param  {string}    original token
+     *  @param  {integer}   how many characters we want to keep in the front
+     *  @return {string}    n(token)...
+     */
+    this.truncateDisplay = function(string, n) {
+        if (n < string.length-1) {
+            var newToken = "";
+            for (var i = 0; i < n; i++) {
+                newToken += string.charAt(i);
+            }
+            newToken += "...";
+            return newToken;
+        }
+        return "***";
+    }
 
     /**
      * The request payload sample/request payload description link click event handler - Show/Hide payload sample content/request payload sample content, based on the link.
