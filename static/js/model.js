@@ -1209,6 +1209,8 @@ Apigee.APIModel.Methods = function() {
                     }
                 }
                 headersList.push({"name" : "Authorization", "value" : basicAuth});
+                urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+
             }
         } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
             if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
