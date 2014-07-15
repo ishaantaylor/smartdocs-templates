@@ -560,6 +560,17 @@ Apigee.APIModel.Methods = function() {
     };
 
     /**
+     *
+     *
+     *
+     */
+    this.renderCallbackURLpwg = function(data) {
+        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
+            // how....
+        }
+    }
+
+    /**
      *  Sends request for 'access+token' to Purina, places it into a form element 'inToken' in password_grant_modal 
      *  @param  {Void}  It grabs the elements with $
      *  @return {Void}  puts token into html component in password grant modal
