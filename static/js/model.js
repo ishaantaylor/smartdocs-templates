@@ -1592,7 +1592,6 @@ Apigee.APIModel.Editor = function() {
         Apigee.APIModel.initMethodsAuthDialogsEvents(); // Re initialize events after the change.
     };
 };
-
 // The class/object Apigee.APIModel.Details extents Apigee.APIModel.Common.
 Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
 /**
@@ -1813,6 +1812,7 @@ Apigee.APIModel.InlineEdit = function() {
         }
         jQuery("[data-role='edit_auth_modal']").modal('show'); // Open pop up basic authentication dialog.
     }
+
     //Public methods.
     /**
      * This method initilize the edit mode based on the mode.
@@ -1830,8 +1830,6 @@ Apigee.APIModel.InlineEdit = function() {
         }
         Apigee.APIModel.initInlineEditAdminAuthEvents();
     };
-
-
     /**     // TODO: make a method that accomplishes the same thing for password grant
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
      */
@@ -1968,6 +1966,7 @@ Apigee.APIModel.InlineEdit = function() {
         responsePayLoadDocsContainer.attr("data-allow-edit","true");
         responsePayLoadDocsContainer.parent().append('<textarea class="response_payload_doc_edit"></textarea>'+editIconHTML);
         Apigee.APIModel.inlineEditPageEvents();
+
     };
     /**
      * The Mouse over event handler for editable element, shows the edit icon.
@@ -2046,6 +2045,7 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             editingFlag = true;
             jQuery(this).focus();
         }
+        
         e.preventDefault();
         return false;
     };
