@@ -1229,8 +1229,6 @@ Apigee.APIModel.Editor = function() {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
         } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
-            console.log(selectedAuthScheme == "passwordgrant");
-            console.log(passwordGrantCredentials != null);
                 // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearer auth
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
 
