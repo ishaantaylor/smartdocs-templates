@@ -690,6 +690,7 @@ Apigee.APIModel.Editor = function() {
         if (authType.indexOf("No auth") != -1) {
             jQuery("[data-role='authentication_container']").css({'visibility':'hidden'});
             jQuery(".icon_lock").css({'visibility':'hidden'});
+            
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -1070,7 +1071,7 @@ Apigee.APIModel.Editor = function() {
         //change the variable name to Target URL.
         var urlToTest = jQuery("[data-role='method_url_container']").text();
         var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
-        
+
         var headersList = [];
         // Loop through the header params and identify if required params are empty otherwise add header params in the list.
         if (jQuery("[data-role='header-param-list']").length) {
@@ -1597,7 +1598,7 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
 /**
  * This class handles operation page inline edit related functionalities.
  */
-Apigee.APIModel.InlineEdit = function() {
+ Apigee.APIModel.InlineEdit = function() {
     // Private properties
     var self = this; // Keep a reference of the current class when the context of 'this' is changing.
     var editMode = 0; // Holds the edit mode value
@@ -2045,7 +2046,7 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             editingFlag = true;
             jQuery(this).focus();
         }
-        
+
         e.preventDefault();
         return false;
     };
