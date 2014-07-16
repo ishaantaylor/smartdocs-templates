@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2013, Apigee Corporation. All rights reserved.
  * Apigee(TM) and the Apigee logo are trademarks or
  * registered trademarks of Apigee Corp. or its subsidiaries. All other
@@ -203,7 +203,6 @@ Apigee.APIModel.Common = function() {
             });
         }
     };
-
     /**
      * This method closes the authentication modal dialog.
      */
@@ -691,7 +690,6 @@ Apigee.APIModel.Editor = function() {
         if (authType.indexOf("No auth") != -1) {
             jQuery("[data-role='authentication_container']").css({'visibility':'hidden'});
             jQuery(".icon_lock").css({'visibility':'hidden'});
-        
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -839,7 +837,7 @@ Apigee.APIModel.Editor = function() {
      */
     this.swapSampleRequestResponseContainer = function() {
         var $currentElement = jQuery(this);
-        if ($currentElement.attr('id') == 'link_request_tab') { // Show the request
+        if ($currentElement.attr('id') ==  'link_request_tab') { // Show the request
             jQuery("#link_response_tab").removeClass('selected');
             jQuery("#request_response_container .response").hide();
             jQuery("#request_response_container .request").show();
@@ -856,7 +854,6 @@ Apigee.APIModel.Editor = function() {
      */
     this.saveAuthModal = function(e) {
         var parentClass = jQuery(this).parents(".modal");
-        var error = false;
         if (parentClass.attr('data-role') == 'basic_auth_modal') {
             var errMessage = self.validateBasicAuthFields('basic_auth_modal'); // Validate email and password.
             if (errMessage == "") { // If there are no errors.
@@ -1028,7 +1025,6 @@ Apigee.APIModel.Editor = function() {
      */
     this.sendRequest = function() {
         jQuery("#working_alert").fadeIn(); // Show working alert message.
-        self.updateAuthContainer();
         jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
         jQuery("#request_response_container .request").html("<p>Make a request and see the response.</p>");
         var templateInputElements = jQuery("[data-role='method_url_container'] span.template_param");
@@ -1069,11 +1065,12 @@ Apigee.APIModel.Editor = function() {
                 });
                 localStorage.setItem("templateParams",JSON.stringify(templateParamArray)); // Create local storage variable and assign the values.
             }
-        }
 
+        }
         //change the variable name to Target URL.
         var urlToTest = jQuery("[data-role='method_url_container']").text();
         var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
+        
         var headersList = [];
         // Loop through the header params and identify if required params are empty otherwise add header params in the list.
         if (jQuery("[data-role='header-param-list']").length) {
@@ -1127,7 +1124,7 @@ Apigee.APIModel.Editor = function() {
             paramGroups.each(function(i, obj) {
                 var paramGroup = jQuery(this);
                 var maxChoice = (paramGroup.find("[data-role='maxChoice']").length) ? parseInt(paramGroup.find("[data-role='maxChoice']").text()) : paramGroup.find("[data-role='param-group-list']").length;
-                var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0;
+                var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0 ;
                 var counter = 0;
                 var paramGroupMissing = [];
                 if (paramGroup.find("[data-role='param-group-list']").length) {
@@ -1230,9 +1227,10 @@ Apigee.APIModel.Editor = function() {
             } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
-        } else {
-
-                // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearererer auth
+        } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
+            console.log(selectedAuthScheme == "passwordgrant");
+            console.log(passwordGrantCredentials != null);
+                // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearer auth
                 // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
 
             var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
@@ -1256,8 +1254,8 @@ Apigee.APIModel.Editor = function() {
 
         // check if theres a bad authorization header
         var head = headersList[headersList.length-1].value; 
-        if (head == "Bearer" || head == "Bearer " || head == "" || head == " ") {
-            // TODO: show error here and dont let this request send
+        if (selectedAuthScheme == "passwordgrant" && (head == "Bearer" || head == "Bearer " || head == "" || head == " ")) {
+            // show error here and dont let this request send, hence the huge if else
             jQuery("error_container").val("Please choose an authentication method");
         } else {
             targetUrl = urlToTest;
@@ -1334,7 +1332,6 @@ Apigee.APIModel.Editor = function() {
             self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});            
         }
     };
-
     /**
      * Success/Error callback method of a send request proxy API call.
      * This methods fetches the response and show the headers, contents and other details in the request and response tab.
@@ -1374,8 +1371,6 @@ Apigee.APIModel.Editor = function() {
         responseContainerString += "> HTTP/"+httpVersion +" "+ responseStatusCode +"  "+ responseReasonPhrase+"</strong>";
         // Response headers construction.
         responseContainerString += "<dl>";
-
-
         for (var i=0; i<data.responseHeaders.length; i++) {
             responseContainerString +=  "<dt>";
             responseContainerString += unescape(data.responseHeaders[i].name);
@@ -1385,7 +1380,6 @@ Apigee.APIModel.Editor = function() {
         }
         responseContainerString += "</dl>";
         responseContainerElement.html(responseContainerString);
-
         // Response content construction.
         if (rawCode != "") {
             /**
@@ -1426,15 +1420,9 @@ Apigee.APIModel.Editor = function() {
                 }
             }
         }
-
         // Request line fine details contruction.
         var hostName = targetUrl.split("//")[1].split("/")[0];
-        
-
-
         var requestContainerString = "<strong>"+data.requestVerb+" "+ targetUrl.split(hostName)[1] + " HTTP/"+httpVersion+"</strong>";
-        
-
         // Request headers construction.
         requestContainerString += "<dl>";
         for (var i=0; i<data.requestHeaders.length; i++) {
@@ -1478,7 +1466,6 @@ Apigee.APIModel.Editor = function() {
         }
         Prism.highlightAll(); // Update the Prism editor.
     };
-
     /**
      * This method clears the error container and it's related arrays and variable.
      */
@@ -1487,7 +1474,6 @@ Apigee.APIModel.Editor = function() {
         self.clearMissingArray();
         jQuery("[data-role='error_container']").hide().html("");
     };
-
     /**
      * This method clears the params variable.
      */
@@ -1497,7 +1483,6 @@ Apigee.APIModel.Editor = function() {
         isQueryParamMissing = false;
         isRequestBodyMissing = false;
     };
-
     /**
      * This method clears the params array.
      */
@@ -1507,7 +1492,6 @@ Apigee.APIModel.Editor = function() {
         queryParamMissing = [];
         requestBodyMissing = "";
     };
-
     this.updateAuthModalFooter = function(modalClassName) {
         var localStorageVariable;
         switch(modalClassName) {
@@ -1530,7 +1514,6 @@ Apigee.APIModel.Editor = function() {
         }
         jQuery("[data-role='"+modalClassName+"']").modal('show');
     };
-
     /**
      * This method gets called after the successful OAuth 2 dance.
      * Display error message if any.
@@ -1556,7 +1539,6 @@ Apigee.APIModel.Editor = function() {
             self.updateAuthContainer();
         }
     };
-
     /**
      * The auth scheme container click event handler - sets clicked auth scheme as selected auth scheme.
      */
@@ -1575,7 +1557,6 @@ Apigee.APIModel.Editor = function() {
         sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + selectedAuthScheme;
 
     };
-
     /**
      * This method clears session storage variables.
      * @param {String} type A type of auth scheme (basicauth or oauth2).
@@ -1607,13 +1588,13 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='password_grant_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
             jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','none');
         }
+
         Apigee.APIModel.initMethodsAuthDialogsEvents(); // Re initialize events after the change.
     };
 };
 
 // The class/object Apigee.APIModel.Details extents Apigee.APIModel.Common.
 Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
-
 /**
  * This class handles operation page inline edit related functionalities.
  */
@@ -1637,7 +1618,6 @@ Apigee.APIModel.InlineEdit = function() {
         sessionStorage.removeItem('basicAuth1');
         sessionStorage.removeItem('userEmail1');
     }
-
     function constructParams(paramType, scope) {
         var liEmenets;
         var typeVal;
@@ -1729,7 +1709,6 @@ Apigee.APIModel.InlineEdit = function() {
         });
         return paramString;
     }
-
     function constructParamGroups(scope) {
         var paramGroups = jQuery("[data-role='param-groups'][data-scope='"+scope+"']");
         var paramString = "";
@@ -1785,7 +1764,6 @@ Apigee.APIModel.InlineEdit = function() {
         }
         return paramString;
     }
-
     function updateParms(currentLIElement, data) {
         var paramName = jQuery.trim(currentLIElement.find("[data-role='name']").text());
         var paramStyle = "";
@@ -1827,7 +1805,6 @@ Apigee.APIModel.InlineEdit = function() {
             }
         }
     }
-
     function checkAdminCredentials() {
         if (localStorage.orgAdminBasicAuthDetails) {
             jQuery("[data-role='edit_auth_modal']").find(".modal-footer p").html('<input type="checkbox" checked id="chk_remember"> Remember credentials for 30 days.');
@@ -1836,7 +1813,6 @@ Apigee.APIModel.InlineEdit = function() {
         }
         jQuery("[data-role='edit_auth_modal']").modal('show'); // Open pop up basic authentication dialog.
     }
-
     //Public methods.
     /**
      * This method initilize the edit mode based on the mode.
@@ -1855,11 +1831,6 @@ Apigee.APIModel.InlineEdit = function() {
         Apigee.APIModel.initInlineEditAdminAuthEvents();
     };
 
-    /**
-     *
-     *
-     */
-    this.
 
     /**     // TODO: make a method that accomplishes the same thing for password grant
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
@@ -1898,7 +1869,6 @@ Apigee.APIModel.InlineEdit = function() {
         self.closeAuthModal();
         self.showAdminAuthenticationSection();
     };
-
     this.showUnauthorizedInfo = function(errorCode) {
         if (errorCode == "401") {
             jQuery("[data-role='edit_auth_modal'] .error_container").html("Invalid credentials. Please try again.").show();
@@ -1906,7 +1876,6 @@ Apigee.APIModel.InlineEdit = function() {
             jQuery("[data-role='edit_auth_modal'] .error_container").html("Error saving details. Please try again.").show();
         }
     };
-
     /**
      * The method shows the info about logged in users and provide clear and reset functionlities.
      */
@@ -2000,7 +1969,6 @@ Apigee.APIModel.InlineEdit = function() {
         responsePayLoadDocsContainer.parent().append('<textarea class="response_payload_doc_edit"></textarea>'+editIconHTML);
         Apigee.APIModel.inlineEditPageEvents();
     };
-
     /**
      * The Mouse over event handler for editable element, shows the edit icon.
      */
@@ -2011,7 +1979,6 @@ Apigee.APIModel.InlineEdit = function() {
             jQuery(this).siblings("a.allow_edit.hover").css({'display':'inline-block'});
         }
     };
-
     /**
      * The Mouse out event handler for editable element, hides the edit icon.
      */
@@ -2022,7 +1989,6 @@ Apigee.APIModel.InlineEdit = function() {
             jQuery(this).siblings("a.allow_edit.hover").hide();
         }
     };
-
     /**
      * Editable elements click event handler.
      * Makes the current element as editable element. Shows OK, Cancel icon,
@@ -2083,7 +2049,6 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         e.preventDefault();
         return false;
     };
-
     this.resetEditableElement = function() {
         descriptionEditFlag = false;
         editingFlag = false;
@@ -2105,8 +2070,8 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         }
         currentEdiatableElementValue = "";
         return false;
-    }
 
+    }
     this.documentClickHandler = function() {
         descriptionEditFlag = false;
         if(currentEdiatableElement) {
@@ -2117,7 +2082,6 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             Apigee.APIModel.initInlineEditAdminAuthEvents();
         }
     }
-
     this.handleConfirmDialogSave = function() {
         descriptionEditFlag = false;
         currentEdiatableElement.siblings("a.allow_edit.ok").trigger("click");
@@ -2168,7 +2132,6 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             
             // Authentication value construction.
             var authenticationValue = jQuery("[data-role='auth-type']").text()
-
             authenticationValue = authenticationValue.replace("Basic Auth","BASICAUTH").replace("Custom Token","CUSTOM").replace( "OAuth 1","OAUTH1WEBSERVER").replace("OAuth 1 Client Credentials","OAUTH1CLIENTCREDENTIALS").replace("OAuth 2","OAUTH2WEBSERVER").replace("OAuth 2 Client Credentials","OAUTH2CLIENTCREDENTIALS").replace("OAuth 2 Implicit Grant Flow","OAUTH2IMPLICITGRANT").replace("No auth","NOAUTH").replace("Password Grant", "PASSWORDGRANT");
             var authtenticationString = "";
             if (authenticationValue.split(",").length > 1) {
@@ -2324,10 +2287,10 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
             jQuery(this).siblings("[data-allow-edit='true']").html(jQuery(this).siblings("textarea").val()).removeClass("edit").removeClass("editing").show();
         }
         jQuery(this).hide();
+
         e.stopPropagation();
         return false;
     };
-
     /**
      * Inline edit update AJAX call success handler.
      * Updates the modified values .
@@ -2357,5 +2320,4 @@ jQuery(this).siblings("textarea").val(jQuery.trim(jQuery(this).html())).height(j
         self.showError("Error saving changes.");
     };
 };
-
 Apigee.APIModel.InlineEdit.prototype = new Apigee.APIModel.Common(); 
