@@ -566,7 +566,7 @@ Apigee.APIModel.Methods = function() {
      */
     this.renderCallbackURLpwg = function(data) {
         if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
-            // how....
+            // how.... ask ajay and vinoth
         }
     }
 
