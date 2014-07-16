@@ -583,7 +583,7 @@ Apigee.APIModel.Methods = function() {
         var validEmail = false;
         var elementValue = userEmail;
         if (jQuery.trim(elementValue).length > 1) {  // Chceck if it is empty.
-            var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+jQuery/);
+            var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
             if (regEx.test(elementValue)) {
                 if(elementValue.indexOf("..")==-1) validEmail = true;
             }
