@@ -829,7 +829,7 @@ Apigee.APIModel.Editor = function() {
 
 
                 // TODO: TEST above password grant --> make this such that it works with the remember checkbox
-
+            }
             Apigee.APIModel.initMethodsAuthDialogsEvents();
         }
     };
