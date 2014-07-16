@@ -52,15 +52,13 @@ Apigee.APIModel.Common = function() {
         }
         return flag;
     };
-
-    navigator.sayswho = (function(){
+    navigator.sayswho= (function(){
         var N= navigator.appName, ua= navigator.userAgent, tem;
         var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
         if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
         M= M? [M[1], M[2]]: [N, navigator.appVersion, '-?'];
         return M;
     })();
-
     showMessage = function(msg) {
         theParent = document.getElementsByTagName("body")[0]
         theKid = document.createElement("div");
@@ -215,7 +213,6 @@ Apigee.APIModel.Common = function() {
         jQuery('[role="dialog"].modal .error_container').hide().html(''); // Empty the error container and hide it.
         //return false;
     };
-
     /**
      * This method validates the authentication fileds like email and password.
      * @return {String} empty string if there are no validation errors, otherwise returns the error message which needs to be displayed.
@@ -234,7 +231,6 @@ Apigee.APIModel.Common = function() {
         }
         return(errMessage);
     };
-
     this.shortenText = function(element,len) {
         var elementVal = element.text();
         if (elementVal.length > len) {
@@ -242,7 +238,6 @@ Apigee.APIModel.Common = function() {
             element.text(elementVal);
         }
     };
-
     /**
      * This method parses the given JSON from a string.
      * @param {String} theText A string which needs to convert as JSON,
@@ -257,7 +252,6 @@ Apigee.APIModel.Common = function() {
         }
         return theJson;
     };
-
     /**
      * This method fetches query parameter from the given URL.
      * @param {String} queryURL An URL.
@@ -282,7 +276,6 @@ Apigee.APIModel.Common = function() {
         }
         return ""; // // Return empty string, if there are no query params in the URL.
     };
-
     /**
      * This method escapes the special charecters like new line charecter, quotes and .., from a string.
      * @param {String} str A String,
@@ -298,7 +291,6 @@ Apigee.APIModel.Common = function() {
             .replace(/\\b/g, "\\b")
             .replace(/\\f/g, "\\f");
     };
-
     /**
      * This method shows error message to the user.
      * @param {String} errorMessage A error message string.
@@ -347,8 +339,8 @@ Apigee.APIModel.Common = function() {
       var datediff = date1.getTime() - date2.getTime(); //store the getTime diff - or +
       return (datediff / (24*60*60*1000)); //Convert values to -/+ days and return value
   };
-};
 
+};
 Apigee.APIModel.Editor = function() {
     var editor; // A Code mirror editor for the request payload.
     /**
@@ -393,7 +385,7 @@ Apigee.APIModel.Editor = function() {
 /**
  * This class handles operation page related functions.
  */
-Apigee.APIModel.Methods = function() {
+ Apigee.APIModel.Methods = function() {
     // Private properties
     var self = this; // Keep a reference of the current class when the context of 'this' is changing.
     // Check if it needed here, bacase it is not used anywhere other then init
@@ -440,14 +432,12 @@ Apigee.APIModel.Methods = function() {
         authType = authType.replace("BASICAUTH","Basic Auth").replace("CUSTOM","Custom Token").replace("OAUTH1WEBSERVER", "OAuth 1").replace("OAUTH1CLIENTCREDENTIALS", "OAuth 1 Client Credentials").replace("OAUTH2WEBSERVER","OAuth 2").replace("OAUTH2CLIENTCREDENTIALS","OAuth 2 Client Credentials").replace("OAUTH2IMPLICITGRANT","OAuth 2 Implicit Grant Flow").replace("OAUTH2PASSWORDGRANT","Password Grant").replace("PASSWORDGRANT", "Password Grant").replace("NOAUTH","No auth");
 
         authTypeElement.html(authType); // Update the auth type HTML element.
-
         self.updateAuthContainer();
         //Fix for extraneous space in the resource URL.
         var resourceURLString = "";
         jQuery("[data-role='method_url_container'] span").each(function() {
             resourceURLString += '<span data-role="'+ jQuery(this).attr('data-role') + '">' +jQuery(this).html() + '</span>';
         });
-
         jQuery("[data-role='method_url_container']").html(resourceURLString);
         // Template parameter releated changes.
         methodURLElement = jQuery("[data-role='method_url_container']");
@@ -458,7 +448,6 @@ Apigee.APIModel.Methods = function() {
         methodURLElement.find("span.template_param").each(function() {
             jQuery(this).siblings("span").attr("data-role",jQuery(this).text());
         });
-
         // Create a sibling node to each template param and add original value to the siblings.
         // Original value will be used while validating template params.
         jQuery("[data-role='template-params']").find("p").each(function() {
@@ -478,7 +467,6 @@ Apigee.APIModel.Methods = function() {
                 }
             });
         });
-
         // Replace template param values with the values stored in local storage.
         if (localStorage.hasOwnProperty('templateParams')) {
             var templateParams = JSON.parse(localStorage.getItem('templateParams'));
@@ -524,14 +512,12 @@ Apigee.APIModel.Methods = function() {
         if (Apigee.APIModel.apiModelBaseUrl) {
             proxyURLLocation = Apigee.APIModel.apiModelBaseUrl +"/v1/o/" + Apigee.APIModel.organizationName;
         }
-
         // TODO: rewrite this i think..
         proxyURLLocation = proxyURLLocation + "/apimodels/proxyUrl"; // Proxy URL location format: https://<domain name>/<alpha/beta/v1>/o/apihub/apimodels/proxyUrl
         self.makeAJAXCall({"url":proxyURLLocation, "callback":self.storeProxyURL}); // Make an AJAX call to retrieve proxy URL to make send request call.
         Apigee.APIModel.initMethodsPageEvents();
         Apigee.APIModel.initMethodsAuthDialogsEvents();
     };
-
     /**
      * Success callback method of a proxy URL AJAX call.
      * @param {Object} data - response content of a proxy URL AJAX call.
@@ -542,7 +528,6 @@ Apigee.APIModel.Methods = function() {
         Apigee.APIModel.authUrl = data.authUrl;
         Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
     }
-
     /**
      * Success callback method of a OAuth2 web serser auth URL AJAX call.
      * @param {Object} data - response content of OAuth2 web serser auth URL AJAX call.
@@ -663,11 +648,9 @@ Apigee.APIModel.Methods = function() {
             jQuery("[data-role='custom_token_modal']").find("[data-role='query']").attr('checked','checked');
         }
     };
-
     this.handleCustomTokenFailure = function() {
         self.showError("Unable to proceed because of missing Custom token configuration.");
     };
-
     /**
      * Update template param width based on number of charecter.
      * @param {HTML Element} element - Template parameter input element.
@@ -687,7 +670,6 @@ Apigee.APIModel.Methods = function() {
             element.css('width','auto');
         }
     };
-
     this.updateTemplateParamText= function(element) {
         var value = element.text();
         var size  = value.length;
@@ -701,7 +683,6 @@ Apigee.APIModel.Methods = function() {
             }
         }
     };
-
     /**
      * This method updates the authentication container based on the auth type value to make Send request AJAX call.
      * @return {Void} updates the authentication container.
@@ -710,6 +691,7 @@ Apigee.APIModel.Methods = function() {
         if (authType.indexOf("No auth") != -1) {
             jQuery("[data-role='authentication_container']").css({'visibility':'hidden'});
             jQuery(".icon_lock").css({'visibility':'hidden'});
+        
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
                 if (authType.indexOf(",") == -1) {
@@ -848,13 +830,9 @@ Apigee.APIModel.Methods = function() {
 
                 // TODO: TEST above password grant --> make this such that it works with the remember checkbox
 
-            }
-
-
             Apigee.APIModel.initMethodsAuthDialogsEvents();
         }
     };
-
     /**
      * The request/response link click event handler - Show/Hide request/response tab content, based on the link.
      * @return {Void} Show/Hide request/response tab content.
@@ -1023,7 +1001,6 @@ Apigee.APIModel.Methods = function() {
             }
         }
     };
-
     /**
      * Click event handler for the reset link avaiable next to the send request button.
      */
@@ -1044,7 +1021,6 @@ Apigee.APIModel.Methods = function() {
         rawCode = "";
         bodyContent = false;
     };
-
     /**
      * Click event handler for the send request button.
      * Constructs all necessary params and make an AJAX call to proxy or display validation error message.
