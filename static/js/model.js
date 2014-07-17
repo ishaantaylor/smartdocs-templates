@@ -555,17 +555,18 @@ Apigee.APIModel.Editor = function() {
         var copy = false;       // should the newURL start grabbing oldURL chars or not
         for (var i = 1; i < oldURL.length; i++) {
             if (copy)                           // if i can copy
-                newURL += oldURL.charAt(i);
+                newURL += oldURL.charAt(i);     //      copy
             if (!copy)                          // if i cant copy
-                comparator = oldURL.charAt(i-1) + oldURL.charAt(i);
+                comparator = oldURL.charAt(i-1) + oldURL.charAt(i);     
+                                                //      increment comparator
             if (!copy && comparator == "v1")    // if i cant copy and ive reached the correct comparator    
-                copy = true;
+                copy = true;                    //      allow me to copy
         }
         return newURL;
     };
 
     /**
-     *  
+     *  Gets client id and client secret from backend
      *  @param  {data}      data from request for client creds
      *  @return {boolean}   true if valid credentials
      */
@@ -580,6 +581,7 @@ Apigee.APIModel.Editor = function() {
 
     /**
      *  These methods get the client id and client secret required with the initial call to get the access_token.
+     *  @return     {client credential}
      */
     this.getPWGclient_id = function() {
         if (passwordGrantClientCreds)
@@ -591,7 +593,7 @@ Apigee.APIModel.Editor = function() {
     }
 
     /**
-     *  Sends request for 'access_token' to Enterprise API, places it into a form element 'inToken' in password_grant_modal 
+     *  Sends request for 'access_token' to Enterprise API- places it into a form element 'inToken' in password_grant_modal 
      *  @param  {Void}  It grabs the elements with jQuery
      *  @return {Void}  puts token into html component in password grant modal
      */
@@ -611,11 +613,11 @@ Apigee.APIModel.Editor = function() {
             }
         }
         if (validEmail && jQuery("#inPassword")[0].value != "") {
-            this.renderClientCredentialsPWG();
+            self.renderClientCredentialsPWG();
             jQuery.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
-                data: inputData + jQuery("#inPassword")[0].value + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret(),
+                data: inputData + jQuery("#inPassword")[0].value /* + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
                     // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
@@ -1197,6 +1199,17 @@ Apigee.APIModel.Editor = function() {
         if ( jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9 && jQuery("[data-role='body-param-list']").length) {
             headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
         }
+        switch (selectedAuthScheme) {
+            case "passwordgrant":
+            case "basicauth":
+                urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+                break;
+            case "customtoken":
+            default:
+                break;
+        }
+        console.log(urlToTest);
+
         urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
         urlToTest = jQuery.trim(urlToTest);
         queryParamString = jQuery.trim(queryParamString);
@@ -1231,7 +1244,7 @@ Apigee.APIModel.Editor = function() {
                     }
                 }
                 headersList.push({"name" : "Authorization", "value" : basicAuth});
-                urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+                ;
 
             }
         } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
@@ -1266,13 +1279,16 @@ Apigee.APIModel.Editor = function() {
             }
             
             headersList.push({"name" : "Authorization", "value" : tok });
-
-            urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
         }
 
         // check if theres a bad authorization header
-        var head = headersList[headersList.length-1].value; 
-        if (selectedAuthScheme == "passwordgrant" && (head == "Bearer" || head == "Bearer " || head == "" || head == " ")) {
+        if (headersList.length > 0) {
+            var head = headersList[headersList.length-1].value;     
+        } else {
+            head = undefined;
+        }
+        
+        if (selectedAuthScheme == "passwordgrant" && (head == "Bearer" || head == "Bearer " || head == "" || head == " " || head === undefined)) {
             // show error here and dont let this request send, hence the huge if else
             jQuery("error_container").val("Please choose an authentication method");
         } else {
