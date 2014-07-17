@@ -392,9 +392,10 @@ Apigee.APIModel.Editor = function() {
     var lastModifiedDate;               // Last modified date in readable form.
     var methodURLElement;               // Holds the resource URL element.
     var basicAuth = "";                 // Holds basic auth value.
-    var passwordGrantCredentials = "";  // Holds password grant credentials.
+    var passwordGrantCredentials = "";  // Holds password grant user credentials.
     var passwordGrantToken = "";        // Holds password grant token.
     var oauth2Credentials = {};         // Holds OAuth 2 credential details.
+    var passwordGrantClientCreds = {};  // Holds client id and client secret for Resource Owner Password Grant (ROPC/password grant)
     var userEmail = "";                 // Holds user email.
     var authType;                       // Holds auth type details.
     var rawCode = "";                   // Stores response content of the testApi call.
@@ -543,27 +544,64 @@ Apigee.APIModel.Editor = function() {
         }
     };
 
-    /**
-     *
-     *
-     *
+    /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
+     *  Takes original URL for authentication systems (basic, oauth, custom)  
+     *  @param  {String} takes the original URL
+     *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
      */
-    this.renderCallbackURLpwg = function(data) {
-        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
-            // how.... ask ajay and vinoth
+    this.formatURLforPWG = function(oldURL) {
+        var newURL = "";        // holds new URL
+        var comparator = "";    // holds 2 char comparator
+        var copy = false;       // should the newURL start grabbing oldURL chars or not
+        for (var i = 1; i < oldURL.length; i++) {
+            if (copy)                           // if i can copy
+                newURL += oldURL.charAt(i);
+            if (!copy)                          // if i cant copy
+                comparator = oldURL.charAt(i-1) + oldURL.charAt(i);
+            if (!copy && comparator == "v1")    // if i cant copy and ive reached the correct comparator    
+                copy = true;
         }
+        return newURL;
+    };
+
+    /**
+     *  
+     *  @param  {data}      data from request for client creds
+     *  @return {boolean}   true if valid credentials
+     */
+    this.renderClientCredentialsPWG = function(data) {
+        var creds = {};
+        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
+            // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
+            // see oauth2webserverflow for example
+        }
+        passwordGrantClientCreds = creds;
     }
 
     /**
-     *  Sends request for 'access+token' to Purina, places it into a form element 'inToken' in password_grant_modal 
+     *  These methods get the client id and client secret required with the initial call to get the access_token.
+     */
+    this.getPWGclient_id = function() {
+        if (passwordGrantClientCreds)
+            return passwordGrantCredentials.client_id;
+    }
+    this.getPWGclient_secret = function() {
+        if (passwordGrantClientCreds)
+            return passwordGrantClientCreds.client_secret;
+    }
+
+    /**
+     *  Sends request for 'access_token' to Enterprise API, places it into a form element 'inToken' in password_grant_modal 
      *  @param  {Void}  It grabs the elements with jQuery
      *  @return {Void}  puts token into html component in password grant modal
      */
     this.handlePWG = function() {
-        // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token
+        // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token -> this will be changed to Enterprise API at next release
             // make an ajax call to get the token
         userEmail = jQuery("#inEmail")[0].value;
-        var inputData = "grant_type=password&username=" + userEmail + "&password=";
+        var inputData = ""; 
+        if (passwordGrantClientCreds)
+           inputData = "grant_type=password&username=" + userEmail + "&password=";
         var validEmail = false;
         var elementValue = userEmail;
         if (jQuery.trim(elementValue).length > 1) {  // Chceck if it is empty.
@@ -573,10 +611,11 @@ Apigee.APIModel.Editor = function() {
             }
         }
         if (validEmail && jQuery("#inPassword")[0].value != "") {
+            this.renderClientCredentialsPWG();
             jQuery.ajax({
                 url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
                 type: 'POST',
-                data: inputData + jQuery("#inPassword")[0].value,
+                data: inputData + jQuery("#inPassword")[0].value + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret(),
                 contentType: 'application/x-www-form-urlencoded',
                 success: function (data, textStatus, jqXHR) {
                     // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
@@ -599,7 +638,7 @@ Apigee.APIModel.Editor = function() {
                     jQuery("#inToken").show();
 
                     // effect is showing save button only when token is there and cleaned up interface
-                    jQuery("savePWGmodal").show();
+                    jQuery("#savePWGmodal").show();
 
                 },
                 error: function (jqXHR, status, error) { 
@@ -607,7 +646,7 @@ Apigee.APIModel.Editor = function() {
                 },
             });
         } else {
-            jQuery("[role='dialog'].modal .error_container").html("We can't seem to find your credentials!").show();   
+            jQuery("[role='dialog'].modal .error_container").html("We can't seem to find your credentials! Please enter your email address and password").show();   
         }
     }
 
@@ -924,26 +963,6 @@ Apigee.APIModel.Editor = function() {
                 jQuery("[role='dialog'].modal .error_container").html("Please fill out your basic credentials and get a token first!").show();
             }
         }
-    };
-
-    /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
-     *  Takes original URL for authentication systems (basic, oauth, custom)  
-     *  @param  {String} takes the original URL
-     *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
-     */
-    this.formatURLforPWG = function(oldURL) {
-        var newURL = "";        // holds new URL
-        var comparator = "";    // holds 2 char comparator
-        var copy = false;       // should the newURL start grabbing oldURL chars or not
-        for (var i = 1; i < oldURL.length; i++) {
-            if (copy)                           // if i can copy
-                newURL += oldURL.charAt(i);
-            if (!copy)                          // if i cant copy
-                comparator = oldURL.charAt(i-1) + oldURL.charAt(i);
-            if (!copy && comparator == "v1")    // if i cant copy and ive reached the correct comparator    
-                copy = true;
-        }
-        return newURL;
     };
 
     this.getCustomTokenCredentials = function() {
