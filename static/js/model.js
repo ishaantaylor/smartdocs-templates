@@ -34,7 +34,7 @@ Apigee.APIModel.Common = function() {
     }
     var MODAL_SESSION_WARNING = '<p>Your credentials are saved for the session only.</p>';
 
-    var MODAL_BUTTONS = '<a class="btn btn-primary button_save_modal" href="javascript:void(0)">Save</a><a class="button_close_modal" href="javascript:void(0)">Cancel</a><a class="button_token_request_modal" href="javascript:void(0)">Send Token Request</a>'
+    var MODAL_BUTTONS = '<a class="btn btn-primary button_save_modal" href="javascript:void(0)">Save</a><a class="button_close_modal" href="javascript:void(0)">Cancel</a>'
     var MODAL_BUTTONS_EDIT = MODAL_BUTTONS.replace("Cancel","Discard");
     // Private methods
     /**
@@ -543,7 +543,36 @@ Apigee.APIModel.Editor = function() {
             window.open(data.authUrl, "oauth2Window", "resizable=yes,scrollbars=yes,status=1,toolbar=1,height=500,width=500");
         }
     };
+    /**
+     *  Handles password grant get token callback
+     *  @param  {object}    data - response data
+     *  @param  textStatus
+     *  @param  jqXHR
+     */
+    this.pwgCallBack = function(data, textStatus, jqXHR) {
+        var access_token = data.access_token;
+        var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+        if (access_token) {
+            if (rememberCheckbox) {
+                var date = new Date();
+                var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                localStorage.apisPasswordGrantDetails = apiName + "@@@" + userEmail + "@@@Bearer " + access_token + "@@@" + dateString;
+            } else {
+                localStorage.removeItem("apisPasswordGrantDetails");
+                sessionStorage.apisPasswordGrantDetails = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
+            }
 
+            // TODO: show the icon to clear the storage- give that option
+
+            /* closing dance */
+            self.closeAuthModal(); 
+            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
+            selectedAuthScheme = "passwordgrant";
+            self.updateAuthContainer();
+        } else {
+            jQuery("[role='dialog'].modal .error_container").html("Please fill out your basic credentials!").show();
+        }
+    }
     /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
      *  Takes original URL for authentication systems (basic, oauth, custom)  
      *  @param  {String} takes the original URL
@@ -564,7 +593,6 @@ Apigee.APIModel.Editor = function() {
         }
         return newURL;
     };
-
     /**
      *  Gets client id and client secret from backend
      *  @param  {data}      data from request for client creds
@@ -576,9 +604,8 @@ Apigee.APIModel.Editor = function() {
             // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
             // see oauth2webserverflow for example
         }
-        passwordGrantClientCreds = creds;
+        return creds;
     }
-
     /**
      *  These methods get the client id and client secret required with the initial call to get the access_token.
      *  @return     {client credential}
@@ -591,67 +618,6 @@ Apigee.APIModel.Editor = function() {
         if (passwordGrantClientCreds)
             return passwordGrantClientCreds.client_secret;
     }
-
-    /**
-     *  Sends request for 'access_token' to Enterprise API- places it into a form element 'inToken' in password_grant_modal 
-     *  @param  {Void}  It grabs the elements with jQuery
-     *  @return {Void}  puts token into html component in password grant modal
-     */
-    this.handlePWG = function() {
-        // make request to purina - http://moearthnetworks-test.apigee.net/purina/oauth2/token -> this will be changed to Enterprise API at next release
-            // make an ajax call to get the token
-        userEmail = jQuery("#inEmail")[0].value;
-        var inputData = ""; 
-        if (passwordGrantClientCreds)
-           inputData = "grant_type=password&username=" + userEmail + "&password=";
-        var validEmail = false;
-        var elementValue = userEmail;
-        if (jQuery.trim(elementValue).length > 1) {  // Chceck if it is empty.
-            var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
-            if (regEx.test(elementValue)) {
-                if(elementValue.indexOf("..")==-1) validEmail = true;
-            }
-        }
-        if (validEmail && jQuery("#inPassword")[0].value != "") {
-            self.renderClientCredentialsPWG();
-            jQuery.ajax({
-                url: encodeURI('http://moearthnetworks-test.apigee.net/purina/oauth2/token'),
-                type: 'POST',
-                data: inputData + jQuery("#inPassword")[0].value /* + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
-                contentType: 'application/x-www-form-urlencoded',
-                success: function (data, textStatus, jqXHR) {
-                    // sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + revisionNumber + "@@@" + "Bearer "+ data.access_token;
-                                        
-                    // reset values
-                    jQuery("#inPassword").val("");
-                    jQuery("#inEmail").val("");
-
-                    // hide unnecesary stuff (email, pw, send request button)
-                    jQuery("#inEmailLabel").hide();
-                    jQuery("#inEmail").hide();
-                    jQuery("#inPasswordLabel").hide();
-                    jQuery("#inPassword").hide();
-                    jQuery("#sendPWGmodal").hide();
-
-                    // show updated token element
-                    passwordGrantToken = data.access_token;
-                    jQuery("#inToken").val(self.truncateDisplay(data.access_token, 6));
-                    jQuery("#inTokenLabel").show();
-                    jQuery("#inToken").show();
-
-                    // effect is showing save button only when token is there and cleaned up interface
-                    jQuery("#savePWGmodal").show();
-
-                },
-                error: function (jqXHR, status, error) { 
-                    jQuery("[role='dialog'].modal .error_container").html(error).show();
-                },
-            });
-        } else {
-            jQuery("[role='dialog'].modal .error_container").html("We can't seem to find your credentials! Please enter your email address and password").show();   
-        }
-    }
-
     /**
      * Error callback method of a OAuth2 web serser auth URL AJAX call.
      * @return {Void} shows error message to the User.
@@ -838,7 +804,7 @@ Apigee.APIModel.Editor = function() {
                     selectedAuthScheme = "passwordgrant";
                 }
                 // var passwordGrantCredentials = "";
-                if (localStorage.apisPasswordGrantCredentials) {
+                if (localStorage.apisPasswordGrantDetails) {
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
                     var lsTimeStamp  = localStorage.apisOAuth2CredentialsDetails.split("@@@")[2];
@@ -846,12 +812,12 @@ Apigee.APIModel.Editor = function() {
                     var dtDiff = currentTimeStamp-lsTimeStamp;
                     var dtDiff = parseInt(self.dateDiff(new Date(currentTimeStamp),new Date(lsTimeStamp)));
                     if (dtDiff > 30) {
-                        localStorage.removeItem("apisPasswordGrantCredentials");
+                        localStorage.removeItem("apisPasswordGrantDetails");
                     } else {
-                        passwordGrantCredentials = localStorage.apisPasswordGrantCredentials;
+                        passwordGrantCredentials = localStorage.apisPasswordGrantDetails;
                     }
-                } else if (sessionStorage.apisPasswordGrantCredentials) {
-                    passwordGrantCredentials = sessionStorage.apisPasswordGrantCredentials;
+                } else if (sessionStorage.apisPasswordGrantDetails) {
+                    passwordGrantCredentials = sessionStorage.apisPasswordGrantDetails;
                 }
                 if (passwordGrantCredentials !== "") {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
@@ -942,27 +908,20 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            var access_token = passwordGrantToken;
-            var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-            if (access_token) {
-                if (rememberCheckbox) {
-                    var date = new Date();
-                    var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
-                    localStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token + "@@@" + dateString;
-                } else {
-                    localStorage.removeItem("apisPasswordGrantCredentials");
-                    sessionStorage.apisPasswordGrantCredentials = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
-                }
-
-                // TODO: show the icon to clear the storage- give that option
-
-                /* closing dance */
-                self.closeAuthModal(); 
-                sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
-                selectedAuthScheme = "passwordgrant";
-                self.updateAuthContainer();
+            passwordGrantClientCreds = self.renderClientCredentialsPWG();
+            userEmail = jQuery("#inEmail")[0].value;
+            if (self.validateEmail(userEmail)) {
+                // send request for token
+                var inputData = "grant_type=password&username=" + userEmail + "&password=";
+                self.makeAJAXCall({
+                    'url': 'http://moearthnetworks-test.apigee.net/purina/oauth2/token',
+                    'type': 'POST',
+                    'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
+                    'contentType': 'application/x-www-form-urlencoded',
+                    'callback': self.pwgCallBack
+                });
             } else {
-                jQuery("[role='dialog'].modal .error_container").html("Please fill out your basic credentials and get a token first!").show();
+                jQuery("[role='dialog'].modal .error_container").html("Please enter a valid email address!").show();
             }
         }
     };
@@ -1261,23 +1220,21 @@ Apigee.APIModel.Editor = function() {
                 headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
             }
         } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
-                // TODO: TEST this part - it makes the requests to the api, each one must be headed with bearer auth
-                // TODO: make sure passwordGrantCredentials is coming from the sessionStorage || if (checkbox) localStorage
 
+            var inputData = ""; 
             var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
             var tok = "";
             var storage = {};
-            if (rememberCheckbox && localStorage.apisPasswordGrantCredentials && apiName==localStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
-                tok = localStorage.apisPasswordGrantCredentials.split("@@@")[2];
+            if (rememberCheckbox && localStorage.apisPasswordGrantDetails && apiName==localStorage.apisPasswordGrantDetails.split("@@@")[0]) {
+                tok = localStorage.apisPasswordGrantDetails.split("@@@")[2];
                 storage = localStorage;
-            } else if (!rememberCheckbox && sessionStorage.apisPasswordGrantCredentials && apiName==sessionStorage.apisPasswordGrantCredentials.split("@@@")[0]) {
-                tok = sessionStorage.apisPasswordGrantCredentials.split("@@@")[2];
+            } else if (!rememberCheckbox && sessionStorage.apisPasswordGrantDetails && apiName==sessionStorage.apisPasswordGrantDetails.split("@@@")[0]) {
+                tok = sessionStorage.apisPasswordGrantDetails.split("@@@")[2];
                 storage = sessionStorage;
             } else {
                 storage = false;
                 tok = "\n";
             }
-            
             headersList.push({"name" : "Authorization", "value" : tok });
         }
 
@@ -1288,7 +1245,7 @@ Apigee.APIModel.Editor = function() {
             head = undefined;
         }
         
-        if (selectedAuthScheme == "passwordgrant" && (head == "Bearer" || head == "Bearer " || head == "" || head == " " || head === undefined)) {
+        if ((selectedAuthScheme == "passwordgrant" && head == "Bearer" || head == "Bearer ") || head == "" || head == " " || head === undefined) {
             // show error here and dont let this request send, hence the huge if else
             jQuery("error_container").val("Please choose an authentication method");
         } else {
@@ -1501,6 +1458,22 @@ Apigee.APIModel.Editor = function() {
         Prism.highlightAll(); // Update the Prism editor.
     };
     /**
+     *  Validates user email
+     *  @param  {string}    original userEmail
+     *  @return {boolean}   true if valid
+     */
+    this.validateEmail = function(userEmail) {
+        var flag = false;
+        var elementValue = userEmail;
+        if (jQuery.trim(elementValue).length > 1) {  // Chceck if it is empty.
+            var regEx = RegExp(/^[a-zA-Z0-9_]{0,1}([a-zA-Z0-9_\.\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~])+([a-zA-Z0-9_\-\+\&\/\$\!\#\%\'\*\=\?\^\`\{\|\}\~]{0,1})+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/);
+            if (regEx.test(elementValue)) {
+                if(elementValue.indexOf("..")==-1) flag = true;
+            }
+        }
+        return flag;
+    }
+    /**
      * This method clears the error container and it's related arrays and variable.
      */
     this.clearErrorContainer = function() {
@@ -1534,7 +1507,7 @@ Apigee.APIModel.Editor = function() {
                 break;
             case "password_grant_modal":
             case "passwordgrant_modal":
-                localStorageVariable = "apisPasswordGrantCredentials";
+                localStorageVariable = "apisPasswordGrantDetails";
                 break;
             default:
                 localStorageVariable = "apisOAuth2CredentialsDetails";
@@ -1573,6 +1546,30 @@ Apigee.APIModel.Editor = function() {
             self.updateAuthContainer();
         }
     };
+    /**
+     * 
+     *
+     *
+     *
+     */
+    this.setPasswordGrantCredentials = function(obj) {
+        if (obj.errorMessage != "") {
+            self.showError(obj.errorMessage);
+        } else {
+            passwordGrantCredentials = obj;
+            selectedAuthScheme = "passwordgrant";
+            var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+            if (rememberCheckbox) {
+                var date = new Date();
+                var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
+                localStorage.apisPasswordGrantDetails = apiName +"@@@"+ JSON.stringify(passwordGrantCredentials)+ "@@@" + dateString;
+            } else {
+                localStorage.removeItem("apisPasswordGrantDetails");
+                sessionStorage.apisOAuth2CredentialsDetails = apiName +"@@@"+ JSON.stringify(passwordGrantCredentials);
+            }
+            sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + selectedAuthScheme;
+        }
+    }
     /**
      * The auth scheme container click event handler - sets clicked auth scheme as selected auth scheme.
      */
@@ -1617,8 +1614,8 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
             isCutomTokenShown = false;
         } else if (type == "passwordgrant") {         // TODO: TEST this - it adds password grant support to this
-            sessionStorage.removeItem('apisPasswordGrantCredentials');
-            localStorage.removeItem('apisPasswordGrantCredentials');
+            sessionStorage.removeItem('apisPasswordGrantDetails');
+            localStorage.removeItem('apisPasswordGrantDetails');
             jQuery("[data-role='password_grant_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
             jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','none');
         }
