@@ -416,7 +416,9 @@ Apigee.APIModel.Editor = function() {
     var apiName = Apigee.APIModel.apiName; // Stores the apiName rendered from template.
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
-    var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
+    var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-";
+    var tokenAuthURL = 'http://moearthnetworks-test.apigee.net/p/oauth2/token'; // GET password grant (ROPC) access_token from here
+    var apiRequestURL = 'http://moearthnetworks-test.apigee.net/p';             // all API requests sent through here..eventually will be sent to 
 
     // Public methods.
     /**
@@ -570,7 +572,7 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "passwordgrant";
             self.updateAuthContainer();
         } else {
-            jQuery("[role='dialog'].modal .error_container").html("Please fill out your basic credentials!").show();
+            jQuery("[role='dialog'].modal .error_container").html("Please try again!").show();
         }
     }
     /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
@@ -595,16 +597,37 @@ Apigee.APIModel.Editor = function() {
     };
     /**
      *  Gets client id and client secret from backend
-     *  @param  {data}      data from request for client creds
-     *  @return {boolean}   true if valid credentials
+     *  @returns    {boolean}   true if no error
      */
-    this.renderClientCredentialsPWG = function(data) {
-        var creds = {};
-        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
-            // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
-            // see oauth2webserverflow for example
+    this.renderClientCredentialsPWG = function() {
+        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined" ) {
+            // make request to back end to get credentials (these credentials are put into the backend through user input into the drupal module)
+            // GET api.enterprise.apigee.com/v1/organizations/{org-id}/apimodels/{apiId}/revisions/{revisionId}/authschemes/passwordgrant
+            $.ajax({
+                url: 'http://192.168.66.11:8080/v1/o/testorg/apimodels/ishaan/revisions/1/authschemes/custom',
+                type: 'GET',
+                success: 'self.credentialCallback',
+                origin: 'allow'
+            });
+        } else {
+            console.log("no drupal");
+            return false;
         }
-        return creds;
+    }
+    /**
+     *  If the call was successful I'll set the passwordGrantCredentials. Otherwise I'll  TODO: figure this out
+     *  @param   {object}       ajax callback data
+     *  @return  {boolean}      set the client credentials. return true if set, false if not
+     */
+    this.credentialCallback = function(data) {
+        if (data) {
+            passwordGrantCredentials.client_id = data.client_id;
+            passwordGrantCredentials.client_secret = data.client_secret;
+            return true;
+        } else {
+            self.showError("Please try refreshing your page.");
+            return false;
+        }
     }
     /**
      *  These methods get the client id and client secret required with the initial call to get the access_token.
@@ -908,18 +931,26 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            passwordGrantClientCreds = self.renderClientCredentialsPWG();
+            var flag = self.renderClientCredentialsPWG();
             userEmail = jQuery("#inEmail")[0].value;
+
+            var url = "http://192.168.66.11:8080/v1/";
+
             if (self.validateEmail(userEmail)) {
-                // send request for token
-                var inputData = "grant_type=password&username=" + userEmail + "&password=";
-                self.makeAJAXCall({
-                    'url': 'http://moearthnetworks-test.apigee.net/purina/oauth2/token',
-                    'type': 'POST',
-                    'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
-                    'contentType': 'application/x-www-form-urlencoded',
-                    'callback': self.pwgCallBack
-                });
+                if (flag || true) {
+                    // send request for token
+                    var inputData = "grant_type=password&username=" + userEmail + "&password=";
+                    self.makeAJAXCall({
+                        'url': tokenAuthURL,
+                        'type': 'POST',
+                        'data': inputData + jQuery("#inPassword")[0].value + "&client_id=" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret(),
+                        'contentType': 'application/x-www-form-urlencoded',
+                        'callback': self.pwgCallBack
+                    });
+                } else {
+                    jQuery("[role='dialog'].modal .error_container").html("Please refresh your page").show();
+                }
+
             } else {
                 jQuery("[role='dialog'].modal .error_container").html("Please enter a valid email address!").show();
             }
@@ -1049,6 +1080,7 @@ Apigee.APIModel.Editor = function() {
 
         }
         //change the variable name to Target URL.
+        /* urlToTest must be can be switched back to api.enterprise.apigee.com when dans update gets relased.. until then, use moearthnetworks */
         var urlToTest = jQuery("[data-role='method_url_container']").text();
         var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
 
@@ -1161,7 +1193,7 @@ Apigee.APIModel.Editor = function() {
         switch (selectedAuthScheme) {
             case "passwordgrant":
             case "basicauth":
-                urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+                urlToTest = apiRequestURL + "/v1" + self.formatURLforPWG(urlToTest);
                 break;
             case "customtoken":
             default:
