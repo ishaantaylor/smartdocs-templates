@@ -417,8 +417,8 @@ Apigee.APIModel.Editor = function() {
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-";
-    var tokenAuthURL = 'http://moearthnetworks-test.apigee.net/p/oauth2/token'; // GET password grant (ROPC) access_token from here
-    var apiRequestURL = 'http://moearthnetworks-test.apigee.net/p';             // all API requests sent through here..eventually will be sent to 
+    var tokenAuthURL = 'http://moearthnetworks-test.apigee.net/p/oauth2/token';     // GET password grant (ROPC) access_token from here
+    var apiRequestURL = 'http://purina.apigeeks.net:8080/';                              // all API requests sent through here..eventually will be sent to 
 
     // Public methods.
     /**
