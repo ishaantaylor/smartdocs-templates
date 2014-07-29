@@ -603,8 +603,13 @@ Apigee.APIModel.Editor = function() {
         if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
             // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
             // see oauth2webserverflow for example
+            if (data) {
+                passwordGrantClientCreds.client_id = data.client_id;
+                passwordGrantClientCreds.client_secret = data.client_secret;
+                return true;
+            } else
+                return false;
         }
-        return creds;
     }
     /**
      *  These methods get the client id and client secret required with the initial call to get the access_token.
@@ -697,15 +702,14 @@ Apigee.APIModel.Editor = function() {
         if (authType.indexOf("No auth") != -1) {
             jQuery("[data-role='authentication_container']").css({'visibility':'hidden'});
             jQuery(".icon_lock").css({'visibility':'hidden'});
-            
         } else {
             if (authType.indexOf("Basic Auth") != -1) { // Show Basic auth info in the operation container.
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "basicauth";
-                    selectedAuthScheme ="basicauth";
                 }
                 var basicAuthCredentials = "";
                 if (localStorage.apisBasicAuthDetails) {
+                    selectedAuthScheme = "basicauth";
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
                     var lsTimeStamp  = localStorage.apisBasicAuthDetails.split("@@@")[3];
@@ -719,6 +723,7 @@ Apigee.APIModel.Editor = function() {
                     }
                 } else if (sessionStorage.apisBasicAuthDetails) {
                     basicAuthCredentials = sessionStorage.apisBasicAuthDetails;
+                    selectedAuthScheme = "basicauth";
                 }
                 if (basicAuthCredentials !== "") {
                     // Format of the apisBasicAuthDetails - api name@@@basic auth details.
@@ -742,13 +747,13 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='basic_auth_container']").show();
             }
-            else if (authType.indexOf("OAuth 2") != -1) { // Show OAuth 2 info in the operation container.
+            if (authType.indexOf("OAuth 2") != -1) { // Show OAuth 2 info in the operation container.
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"oauth2";
-                    selectedAuthScheme = "oauth2";
                 }
                 var authCredentials = "";
                 if (localStorage.apisOAuth2CredentialsDetails) {
+                    selectedAuthScheme = "oauth2";
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
                     var lsTimeStamp  = localStorage.apisOAuth2CredentialsDetails.split("@@@")[2];
@@ -762,6 +767,7 @@ Apigee.APIModel.Editor = function() {
                     }
                 } else if (sessionStorage.apisOAuth2CredentialsDetails) {
                     authCredentials = sessionStorage.apisOAuth2CredentialsDetails;
+                    selectedAuthScheme = "oauth2";
                 }
                 if (authCredentials !== "") {
                     // Format of the apisBasicAuthDetails - api name@@@revision number@@@oauth 2 details.
@@ -777,14 +783,14 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='oauth2_container']").show();
             }
-            else if (authType.indexOf("Custom Token") != -1) { // Show Custom token info in the operation container.
+            if (authType.indexOf("Custom Token") != -1) { // Show Custom token info in the operation container.
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"customtoken";
-                    selectedAuthScheme = "customtoken";
                 }
                 var custemTokenSession = sessionStorage.revisionsCustomTokenCredentialsDetails;
                 if (custemTokenSession) { // Check if Custom token details stored in session storage.
                     // Format of the revisionsCustomTokenDetails - api name@@@revision number@@@oauth 2 details.
+                    selectedAuthScheme = "custom";
                     if (apiName==custemTokenSession.split("@@@")[0] && revisionNumber==custemTokenSession.split("@@@")[1]) { // Check if apiName and revison number matches.
                         customTokenObject = JSON.parse(custemTokenSession.split("@@@")[2])
                         //custemTokenCredentials = custemTokenSession.split("@@@")[2]+ "@@@" + custemTokenSession.split("@@@")[3]+ "@@@" + custemTokenSession.split("@@@")[4];
@@ -798,16 +804,16 @@ Apigee.APIModel.Editor = function() {
                 }
                 jQuery("[data-role='custom_token_container']").show();
             }
-            else if (authType.indexOf("Password Grant") != -1) {  // Show password grant info
+            if (authType.indexOf("Password Grant") != -1) {  // Show password grant info
                 if (authType.indexOf(",") == -1) {
                     sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" +"passwordgrant";
-                    selectedAuthScheme = "passwordgrant";
                 }
                 // var passwordGrantCredentials = "";
                 if (localStorage.apisPasswordGrantDetails) {
+                    selectedAuthScheme = "passwordgrant";
                     var date = new Date();
                     var dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear();
-                    var lsTimeStamp  = localStorage.apisOAuth2CredentialsDetails.split("@@@")[2];
+                    var lsTimeStamp  = localStorage.apisPasswordGrantDetails.split("@@@")[2];
                     var currentTimeStamp = dateString;
                     var dtDiff = currentTimeStamp-lsTimeStamp;
                     var dtDiff = parseInt(self.dateDiff(new Date(currentTimeStamp),new Date(lsTimeStamp)));
@@ -817,13 +823,14 @@ Apigee.APIModel.Editor = function() {
                         passwordGrantCredentials = localStorage.apisPasswordGrantDetails;
                     }
                 } else if (sessionStorage.apisPasswordGrantDetails) {
+                    selectedAuthScheme = "passwordgrant";
                     passwordGrantCredentials = sessionStorage.apisPasswordGrantDetails;
                 }
-                if (passwordGrantCredentials !== "") {
+                if (passwordGrantCredentials != "" || passwordGrantCredentials !== undefined) {
                     // Format of the apisBasicAuthDetails -> api name@@@revision number@@@oauth 2 details.
                     if (apiName == passwordGrantCredentials.split("@@@")[0]) {
-                        passwordGrantCredentials = jQuery.parseJSON(passwordGrantCredentials.split("@@@")[1]);
-                        var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && sessionStorage.selectedAuthScheme.split("@@@")[1]== "passwordgrant") ? "selected" : "";
+                        // passwordGrantCredentials = passwordGrantCredentials.split("@@@")[1];
+                        var selected = (apiName == passwordGrantCredentials.split("@@@")[0] && selectedAuthScheme == "passwordgrant") ? "selected" : "";
                         if (selected != "") {
                             jQuery("[data-role='password_grant_container']").addClass(selected);
                         }
@@ -908,20 +915,22 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            passwordGrantClientCreds = self.renderClientCredentialsPWG();
+            var flag = self.renderClientCredentialsPWG();
             userEmail = jQuery("#inEmail")[0].value;
-            if (self.validateEmail(userEmail)) {
+            if (self.validateEmail(userEmail) /*&& flag */) {
                 // send request for token
                 var inputData = "grant_type=password&username=" + userEmail + "&password=";
                 self.makeAJAXCall({
                     'url': 'http://moearthnetworks-test.apigee.net/purina/oauth2/token',
                     'type': 'POST',
-                    'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
+                    'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id=" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
                     'contentType': 'application/x-www-form-urlencoded',
                     'callback': self.pwgCallBack
                 });
+                self.clearErrorContainer();
+
             } else {
-                jQuery("[role='dialog'].modal .error_container").html("Please enter a valid email address!").show();
+                jQuery("[role='dialog'].modal .error_container").html("Please refresh and try again!").show();
             }
         }
     };
@@ -1005,322 +1014,327 @@ Apigee.APIModel.Editor = function() {
      *  Supports all auth types: basicauth, oauth2, passwordgrant - makes request such that the webpage can render all metadata
      */
     this.sendRequest = function() {
-        jQuery("#working_alert").fadeIn(); // Show working alert message.
-        jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
-        jQuery("#request_response_container .request").html("<p>Make a request and see the response.</p>");
-        var templateInputElements = jQuery("[data-role='method_url_container'] span.template_param");
-        if (templateInputElements.length >= 1) { // Check if template param available.
-            // Stores the template param name and values in local storage, if user modified the default template param value.
-            // Loop through the template params and check against local stroage variable.
-            if (localStorage.hasOwnProperty('templateParams')) {
-                var templateParams = JSON.parse(localStorage.getItem('templateParams'));
-                jQuery("[data-role='method_url_container'] span.template_param").each(function() {
-                    var inputElementName = jQuery(this).siblings("span").attr('data-role');
-                    var inputElementValue = jQuery(this).text();
-                    if (inputElementName == inputElementValue || inputElementValue == "" || jQuery(this).html() == "&nbsp;") {
-                        isTemplateParamMissing = true;
-                        templateParamMissing.push(inputElementName.substring(1,inputElementName.length-1));
-                        jQuery(this).addClass('error');
-                    }
-                    var isModified = false;
-                    for (var i=0; i<templateParams.length; i++) {
-                        var paramName = templateParams[i].name;
-                        var paramValue = templateParams[i].value;
-                        if (inputElementName == paramName) {
-                            isModified=true;
+        console.log(selectedAuthScheme);
+        if (selectedAuthScheme != "") {
+            jQuery("#working_alert").fadeIn(); // Show working alert message.
+            jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
+            jQuery("#request_response_container .request").html("<p>Make a request and see the response.</p>");
+            var templateInputElements = jQuery("[data-role='method_url_container'] span.template_param");
+            if (templateInputElements.length >= 1) { // Check if template param available.
+                // Stores the template param name and values in local storage, if user modified the default template param value.
+                // Loop through the template params and check against local stroage variable.
+                if (localStorage.hasOwnProperty('templateParams')) {
+                    var templateParams = JSON.parse(localStorage.getItem('templateParams'));
+                    jQuery("[data-role='method_url_container'] span.template_param").each(function() {
+                        var inputElementName = jQuery(this).siblings("span").attr('data-role');
+                        var inputElementValue = jQuery(this).text();
+                        if (inputElementName == inputElementValue || inputElementValue == "" || jQuery(this).html() == "&nbsp;") {
+                            isTemplateParamMissing = true;
+                            templateParamMissing.push(inputElementName.substring(1,inputElementName.length-1));
+                            jQuery(this).addClass('error');
                         }
-                        if(inputElementName == paramName && inputElementValue != paramValue && inputElementValue.length) {
-                            templateParams[i].value = inputElementValue;
-                        }
-                    }
-                    if (!isModified) {
-                        templateParams.push({"name":inputElementName,"value":inputElementValue});
-                    }
-                });
-                localStorage.setItem("templateParams",JSON.stringify(templateParams));
-            } else {
-                var templateParamArray = [];
-                jQuery("[data-role='method_url_container'] input").each(function() {
-                var spanElement = jQuery(this).siblings("span");
-                    templateParamArray.push({"name":spanElement.attr("data-role"),"value":spanElement.html()});
-                });
-                localStorage.setItem("templateParams",JSON.stringify(templateParamArray)); // Create local storage variable and assign the values.
-            }
-
-        }
-        //change the variable name to Target URL.
-        var urlToTest = jQuery("[data-role='method_url_container']").text();
-        var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
-
-        var headersList = [];
-        // Loop through the header params and identify if required params are empty otherwise add header params in the list.
-        if (jQuery("[data-role='header-param-list']").length) {
-            jQuery("[data-role='header-param-list']").each(function(i, obj) {
-                var headerParamName = jQuery(this).find("[data-role='name']").text();
-                var headerParamValue;
-                if (jQuery(this).find("[data-role='multiple-value']").length) {
-                    headerParamValue = jQuery(this).find("select option:selected").val();
-                    headerParamValue = (headerParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : headerParamValue;
-                } else {
-                    headerParamValue = jQuery(this).find("[data-role='value']").val();
-                }
-                headersList.push({"name" : headerParamName, "value" : headerParamValue});
-                if (jQuery(this).find("span.required").length && jQuery(this).find("[data-role='value']").val() == "") {
-                    isHeaderParamMissing = true;
-                    headerParamMissing.push(headerParamName);
-                    jQuery(this).find("[data-role='value']").addClass('error');
-                }
-            });
-        }
-        var queryParamString = "";
-        // Loop through the query params and identify if required params are empty otherwise add query params in the list.
-        if (jQuery("[data-role='query-param-list']").length >= 1) {
-            var isFistParam = true;
-            jQuery("[data-role='query-param-list']").each(function(i, obj) {
-                var queryParamName = jQuery(this).find("[data-role='name']").text();
-                var queryParamValue;
-                if (jQuery(this).find("[data-role='multiple-value']").length) {
-                    queryParamValue = jQuery(this).find("select option:selected").val();
-                    queryParamValue = (queryParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : queryParamValue;
-                } else {
-                    queryParamValue = jQuery(this).find("[data-role='value']").val();
-                }
-                
-                if (jQuery.trim(queryParamValue).length >= 1) {
-                    var separator = (isFistParam) ? "" : "&";
-                    queryParamString += separator + queryParamName + "=" + encodeURIComponent(decodeURIComponent(queryParamValue));
-                    isFistParam = false;
-                }
-                
-                if (jQuery(this).find("span.required").length && queryParamValue == "") {
-                    isQueryParamMissing = true;
-                    queryParamMissing.push(queryParamName);
-                    jQuery(this).find("[data-role='value']").addClass('error');
-                }
-            });
-        }
-        var errorMessage = "";
-        var paramGroups = jQuery("[data-role='param-groups']");
-        if (paramGroups.length) {
-            paramGroups.each(function(i, obj) {
-                var paramGroup = jQuery(this);
-                var maxChoice = (paramGroup.find("[data-role='maxChoice']").length) ? parseInt(paramGroup.find("[data-role='maxChoice']").text()) : paramGroup.find("[data-role='param-group-list']").length;
-                var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0 ;
-                var counter = 0;
-                var paramGroupMissing = [];
-                if (paramGroup.find("[data-role='param-group-list']").length) {
-                    paramGroup.find("[data-role='param-group-list']").each(function(i, obj) {
-                        var paramGroupName = jQuery(this).find("[data-role='name']").text();
-                        var paramGroupValue = jQuery(this).find("[data-role='value']").val();
-                        var paramGroupType = jQuery(this).find("[data-role='type']").text().toLowerCase();
-                        if (jQuery.trim(paramGroupValue).length >= 1) {
-                            counter++;
-                            if (paramGroupType == "query") {
-                                var separator = (jQuery.trim(queryParamString).length) ? "&" : "";
-                                queryParamString += separator + paramGroupName + "=" + encodeURIComponent(decodeURIComponent(paramGroupValue));
-                            } else if (paramGroupType == "header") {
-                                headersList.push({"name" : paramGroupName, "value" : paramGroupValue});
+                        var isModified = false;
+                        for (var i=0; i<templateParams.length; i++) {
+                            var paramName = templateParams[i].name;
+                            var paramValue = templateParams[i].value;
+                            if (inputElementName == paramName) {
+                                isModified=true;
                             }
-                        } else {
-                            paramGroupMissing.push(jQuery.trim(paramGroupName));
+                            if(inputElementName == paramName && inputElementValue != paramValue && inputElementValue.length) {
+                                templateParams[i].value = inputElementValue;
+                            }
+                        }
+                        if (!isModified) {
+                            templateParams.push({"name":inputElementName,"value":inputElementValue});
                         }
                     });
-                }
-                if (minChoice > counter) {
-                    errorMessage += "Missing "+ (maxChoice-counter) +" value for parameter group of: <span>"+paramGroupMissing.join(", ")+"</span></br>";
-                }
-                if (counter > maxChoice) {
-                    errorMessage += "Number of entered parmeters exceeds the maximum number of choices in the parameter group</br>";
-                }
-            });
-        }
-        if (customTokenObject.tokenType == "query") {
-            var separator = (queryParamString != "") ? "&" : "";
-            var index = 0;
-            for (var key in customTokenObject.tokenMap) {
-                separator = (index == 0 ) ? separator : "&";
-                var customTokenName = key;
-                var customTokenValue = customTokenObject.tokenMap[key];
-                if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
-                    queryParamString += separator + customTokenName + "=" + customTokenValue;
-                    index++;
-                }
-            }
-        } else {
-            for (var key in customTokenObject.tokenMap) {
-                var customTokenName = key;
-                var customTokenValue = customTokenObject.tokenMap[key];
-                if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
-                    headersList.push({"name" : customTokenName, "value" : customTokenValue});
-                }
-            }
-        }
-        if ( jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9 && jQuery("[data-role='body-param-list']").length) {
-            headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
-        }
-        switch (selectedAuthScheme) {
-            case "passwordgrant":
-            case "basicauth":
-                urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
-                break;
-            case "customtoken":
-            default:
-                break;
-        }
-        console.log(urlToTest);
-
-        urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
-        urlToTest = jQuery.trim(urlToTest);
-        queryParamString = jQuery.trim(queryParamString);
-
-        if (queryParamString != "") {
-            var separator = "?";
-            if (urlToTest.indexOf("?") != -1) {
-                separator = "&"
-            }
-            urlToTest =  urlToTest + separator + queryParamString; // Append query params.
-        }
-        if (isTemplateParamMissing) {
-            errorMessage += "Missing value for template parameter(s): <span>"+templateParamMissing.join(", ")+"</span></br>";
-        }
-        if (isQueryParamMissing) {
-            errorMessage += "Missing value for required query parameter(s):&nbsp;<span>"+queryParamMissing.join(", ")+"</span></br>";
-        }
-        if (isHeaderParamMissing) {
-            errorMessage += "Missing value for required header parameter(s):&nbsp;<span>"+headerParamMissing.join(", ")+"</span></br>";
-        }
-        if (errorMessage != "") { // Display error message, if any of the required param is missing.
-            jQuery("body").scrollTop(0);
-            jQuery("[data-role='error_container']").html(errorMessage).show();;
-            self.clearMissingArray();
-        }
-        if (selectedAuthScheme  == "basicauth") { // Add basic details in send request proxy API call.
-            if (basicAuth) {
-                if(localStorage.apisBasicAuthDetails && apiName==localStorage.apisBasicAuthDetails.split("@@@")[0]) {
-                    if (basicAuth != localStorage.apisBasicAuthDetails.split("@@@")[2]) {
-                        basicAuth = localStorage.apisBasicAuthDetails.split("@@@")[2]
-                        jQuery("[data-role='basic_auth_container']").find(".link_open_basicauth").html(localStorage.apisBasicAuthDetails.split("@@@")[1]);
-                    }
-                }
-                headersList.push({"name" : "Authorization", "value" : basicAuth});
-                ;
-
-            }
-        } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
-            if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
-                var credentialObj = jQuery.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
-                if (credentialObj.accessToken != oauth2Credentials.accessToken) {
-                    oauth2Credentials = credentialObj;
-                }
-            } else if (oauth2Credentials.accessTokenType == "query") { // Add OAuth 2 details in the query param.
-                var paramName = (oauth2Credentials.accessToeknParamName == "") ? "oauth_token" : oauth2Credentials.accessToeknParamName;
-                var separator = (queryParamString == "") ? "?"  : "&";
-                urlToTest += separator + paramName +"=" + oauth2Credentials.accessToken;
-            } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
-                headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
-            }
-        } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
-
-            var inputData = ""; 
-            var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
-            var tok = "";
-            var storage = {};
-            if (rememberCheckbox && localStorage.apisPasswordGrantDetails && apiName==localStorage.apisPasswordGrantDetails.split("@@@")[0]) {
-                tok = localStorage.apisPasswordGrantDetails.split("@@@")[2];
-                storage = localStorage;
-            } else if (!rememberCheckbox && sessionStorage.apisPasswordGrantDetails && apiName==sessionStorage.apisPasswordGrantDetails.split("@@@")[0]) {
-                tok = sessionStorage.apisPasswordGrantDetails.split("@@@")[2];
-                storage = sessionStorage;
-            } else {
-                storage = false;
-                tok = "\n";
-            }
-            headersList.push({"name" : "Authorization", "value" : tok });
-        }
-
-        // check if theres a bad authorization header
-        if (headersList.length > 0) {
-            var head = headersList[headersList.length-1].value;     
-        } else {
-            head = undefined;
-        }
-        
-        if ((selectedAuthScheme == "passwordgrant" && head == "Bearer" || head == "Bearer ") || head == "" || head == " " || head === undefined) {
-            // show error here and dont let this request send, hence the huge if else
-            jQuery("error_container").val("Please choose an authentication method");
-        } else {
-            targetUrl = urlToTest;
-            urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
-            urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
-
-            // If a method has an attachment, we need to modify the standard AJAX the following way.
-            var bodyPayload = null;
-            var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
-            var processDataValue = true;
-            if (jQuery("[data-role='attachments-list']").length || (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='body-param-list']").length)) {
-                var multiPartTypes = "";
-                if (jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9) {
-                    if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
-                        self.showUnsupportedAttachementAlertMessage();
-                    }
-                    jQuery("#working_alert").fadeOut();
-                    return;
-                }
-                if (jQuery("[data-role='body-param-list']").length) {
-                    var formParams = jQuery("#formParams").serialize();
-                    if (!jQuery("#formAttachment input[name='root-fields']").length) {
-                        jQuery("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
-                    } else {
-                        jQuery("#formAttachment input[name='root-fields']").val(formParams);
-                    }
-                    multiPartTypes = "param"; 
-                    if (jQuery('[data-role="request-payload-example"]').length || jQuery("[data-role='attachments-list']").length) {
-                        multiPartTypes += (jQuery('[data-role="request-payload-example"]').length) ? "+text" : "";
-                        multiPartTypes += (jQuery("[data-role='attachments-list']").length) ? "+attachment" : "";
-                        urlToTest += "&multiparttypes="+multiPartTypes;
-                    }
+                    localStorage.setItem("templateParams",JSON.stringify(templateParams));
                 } else {
-                    for (var i=0,l=headersList.length; i<l; i++) {
-                        if (headersList[i].name == "Content-Type") {
-                            headersList.splice(i,1);
+                    var templateParamArray = [];
+                    jQuery("[data-role='method_url_container'] input").each(function() {
+                    var spanElement = jQuery(this).siblings("span");
+                        templateParamArray.push({"name":spanElement.attr("data-role"),"value":spanElement.html()});
+                    });
+                    localStorage.setItem("templateParams",JSON.stringify(templateParamArray)); // Create local storage variable and assign the values.
+                }
+    
+            }
+            //change the variable name to Target URL.
+            var urlToTest = jQuery("[data-role='method_url_container']").text();
+            var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
+    
+            var headersList = [];
+            // Loop through the header params and identify if required params are empty otherwise add header params in the list.
+            if (jQuery("[data-role='header-param-list']").length) {
+                jQuery("[data-role='header-param-list']").each(function(i, obj) {
+                    var headerParamName = jQuery(this).find("[data-role='name']").text();
+                    var headerParamValue;
+                    if (jQuery(this).find("[data-role='multiple-value']").length) {
+                        headerParamValue = jQuery(this).find("select option:selected").val();
+                        headerParamValue = (headerParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : headerParamValue;
+                    } else {
+                        headerParamValue = jQuery(this).find("[data-role='value']").val();
+                    }
+                    headersList.push({"name" : headerParamName, "value" : headerParamValue});
+                    if (jQuery(this).find("span.required").length && jQuery(this).find("[data-role='value']").val() == "") {
+                        isHeaderParamMissing = true;
+                        headerParamMissing.push(headerParamName);
+                        jQuery(this).find("[data-role='value']").addClass('error');
+                    }
+                });
+            }
+            var queryParamString = "";
+            // Loop through the query params and identify if required params are empty otherwise add query params in the list.
+            if (jQuery("[data-role='query-param-list']").length >= 1) {
+                var isFistParam = true;
+                jQuery("[data-role='query-param-list']").each(function(i, obj) {
+                    var queryParamName = jQuery(this).find("[data-role='name']").text();
+                    var queryParamValue;
+                    if (jQuery(this).find("[data-role='multiple-value']").length) {
+                        queryParamValue = jQuery(this).find("select option:selected").val();
+                        queryParamValue = (queryParamValue == DEFAULT_OPTIONAL_PARAM_OPTION) ? "" : queryParamValue;
+                    } else {
+                        queryParamValue = jQuery(this).find("[data-role='value']").val();
+                    }
+                    
+                    if (jQuery.trim(queryParamValue).length >= 1) {
+                        var separator = (isFistParam) ? "" : "&";
+                        queryParamString += separator + queryParamName + "=" + encodeURIComponent(decodeURIComponent(queryParamValue));
+                        isFistParam = false;
+                    }
+                    
+                    if (jQuery(this).find("span.required").length && queryParamValue == "") {
+                        isQueryParamMissing = true;
+                        queryParamMissing.push(queryParamName);
+                        jQuery(this).find("[data-role='value']").addClass('error');
+                    }
+                });
+            }
+            var errorMessage = "";
+            var paramGroups = jQuery("[data-role='param-groups']");
+            if (paramGroups.length) {
+                paramGroups.each(function(i, obj) {
+                    var paramGroup = jQuery(this);
+                    var maxChoice = (paramGroup.find("[data-role='maxChoice']").length) ? parseInt(paramGroup.find("[data-role='maxChoice']").text()) : paramGroup.find("[data-role='param-group-list']").length;
+                    var minChoice = (paramGroup.find("[data-role='minChoice']").length) ? parseInt(paramGroup.find("[data-role='minChoice']").text()) : 0 ;
+                    var counter = 0;
+                    var paramGroupMissing = [];
+                    if (paramGroup.find("[data-role='param-group-list']").length) {
+                        paramGroup.find("[data-role='param-group-list']").each(function(i, obj) {
+                            var paramGroupName = jQuery(this).find("[data-role='name']").text();
+                            var paramGroupValue = jQuery(this).find("[data-role='value']").val();
+                            var paramGroupType = jQuery(this).find("[data-role='type']").text().toLowerCase();
+                            if (jQuery.trim(paramGroupValue).length >= 1) {
+                                counter++;
+                                if (paramGroupType == "query") {
+                                    var separator = (jQuery.trim(queryParamString).length) ? "&" : "";
+                                    queryParamString += separator + paramGroupName + "=" + encodeURIComponent(decodeURIComponent(paramGroupValue));
+                                } else if (paramGroupType == "header") {
+                                    headersList.push({"name" : paramGroupName, "value" : paramGroupValue});
+                                }
+                            } else {
+                                paramGroupMissing.push(jQuery.trim(paramGroupName));
+                            }
+                        });
+                    }
+                    if (minChoice > counter) {
+                        errorMessage += "Missing "+ (maxChoice-counter) +" value for parameter group of: <span>"+paramGroupMissing.join(", ")+"</span></br>";
+                    }
+                    if (counter > maxChoice) {
+                        errorMessage += "Number of entered parmeters exceeds the maximum number of choices in the parameter group</br>";
+                    }
+                });
+            }
+            if (customTokenObject.tokenType == "query") {
+                var separator = (queryParamString != "") ? "&" : "";
+                var index = 0;
+                for (var key in customTokenObject.tokenMap) {
+                    separator = (index == 0 ) ? separator : "&";
+                    var customTokenName = key;
+                    var customTokenValue = customTokenObject.tokenMap[key];
+                    if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
+                        queryParamString += separator + customTokenName + "=" + customTokenValue;
+                        index++;
+                    }
+                }
+            } else {
+                for (var key in customTokenObject.tokenMap) {
+                    var customTokenName = key;
+                    var customTokenValue = customTokenObject.tokenMap[key];
+                    if(jQuery.trim(customTokenName) != "" && jQuery.trim(customTokenValue) != "") {
+                        headersList.push({"name" : customTokenName, "value" : customTokenValue});
+                    }
+                }
+            }
+            if ( jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9 && jQuery("[data-role='body-param-list']").length) {
+                headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
+            }
+            switch (selectedAuthScheme) {
+                case "passwordgrant":
+                case "basicauth":
+                    urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+                    break;
+                case "customtoken":
+                default:
+                    break;
+            }
+            urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
+            urlToTest = jQuery.trim(urlToTest);
+            queryParamString = jQuery.trim(queryParamString);
+    
+            if (queryParamString != "") {
+                var separator = "?";
+                if (urlToTest.indexOf("?") != -1) {
+                    separator = "&"
+                }
+                urlToTest =  urlToTest + separator + queryParamString; // Append query params.
+            }
+            if (isTemplateParamMissing) {
+                errorMessage += "Missing value for template parameter(s): <span>"+templateParamMissing.join(", ")+"</span></br>";
+            }
+            if (isQueryParamMissing) {
+                errorMessage += "Missing value for required query parameter(s):&nbsp;<span>"+queryParamMissing.join(", ")+"</span></br>";
+            }
+            if (isHeaderParamMissing) {
+                errorMessage += "Missing value for required header parameter(s):&nbsp;<span>"+headerParamMissing.join(", ")+"</span></br>";
+            }
+            if (errorMessage != "") { // Display error message, if any of the required param is missing.
+                jQuery("body").scrollTop(0);
+                jQuery("[data-role='error_container']").html(errorMessage).show();;
+                self.clearMissingArray();
+            }
+            if (selectedAuthScheme  == "basicauth") { // Add basic details in send request proxy API call.
+                if (basicAuth) {
+                    if(localStorage.apisBasicAuthDetails && apiName==localStorage.apisBasicAuthDetails.split("@@@")[0]) {
+                        if (basicAuth != localStorage.apisBasicAuthDetails.split("@@@")[2]) {
+                            basicAuth = localStorage.apisBasicAuthDetails.split("@@@")[2]
+                            jQuery("[data-role='basic_auth_container']").find(".link_open_basicauth").html(localStorage.apisBasicAuthDetails.split("@@@")[1]);
                         }
                     }
-                    if (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='attachments-list']").length) {
-                        urlToTest += "&multiparttypes=text+attachment";
+                    headersList.push({"name" : "Authorization", "value" : basicAuth});
+                }
+            } else if (selectedAuthScheme  == "oauth2" && oauth2Credentials != null) {  // Add OAuth 2 details in send request proxy API call.
+                if (localStorage.apisOAuth2CredentialsDetails && apiName==localStorage.apisOAuth2CredentialsDetails.split("@@@")[0]) {
+                    var credentialObj = jQuery.parseJSON(localStorage.apisOAuth2CredentialsDetails.split("@@@")[1]);
+                    if (credentialObj.accessToken != oauth2Credentials.accessToken) {
+                        oauth2Credentials = credentialObj;
                     }
+                } else if (oauth2Credentials.accessTokenType == "query") { // Add OAuth 2 details in the query param.
+                    var paramName = (oauth2Credentials.accessToeknParamName == "") ? "oauth_token" : oauth2Credentials.accessToeknParamName;
+                    var separator = (queryParamString == "") ? "?"  : "&";
+                    urlToTest += separator + paramName +"=" + oauth2Credentials.accessToken;
+                } else if (oauth2Credentials.accessTokenType == "bearer") { // Add OAuth 2 details in headers.
+                    headersList.push({"name" : "Authorization", "value" : "Bearer " + oauth2Credentials.accessToken});
                 }
-
-                if (jQuery('[data-role="request-payload-example"]').length) {
-                    if (!jQuery("#formAttachment textarea[name='text']").length) {
-                        if (jQuery("#formAttachment input[name='root-fields']").length) {
-                            jQuery("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
-                        } else {
-                            jQuery("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
-                        }    
-                    } else {
-                        jQuery("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
-                    }
-                }
-                if (jQuery("#formParams").length) {
-                    bodyPayload = new FormData(jQuery("form")[1]); // Create an arbitrary FormData instance
+            } else if (selectedAuthScheme == "passwordgrant" && passwordGrantCredentials != null) {
+                var inputData = ""; 
+                var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
+                var tok = "";
+                var storage = {};
+    
+                if (localStorage.apisPasswordGrantDetails !== undefined && apiName==localStorage.apisPasswordGrantDetails.split("@@@")[0]) {
+                    tok = localStorage.apisPasswordGrantDetails.split("@@@")[2];
+                    storage = localStorage;
+                } else if (sessionStorage.apisPasswordGrantDetails !== undefined && apiName==sessionStorage.apisPasswordGrantDetails.split("@@@")[0]) {
+                    tok = sessionStorage.apisPasswordGrantDetails.split("@@@")[2];
+                    storage = sessionStorage;
                 } else {
-                    bodyPayload = new FormData(jQuery("form")[0]); // Create an arbitrary FormData instance
+                    storage = false;
+                    tok = "\n";
                 }
-                contentTypeValue = false;
-                processDataValue = false;
-                
-            } else if (jQuery("[data-role='body-param-list']").length) {
-                if (jQuery("#formParams").length) {
-                    bodyPayload = jQuery("#formParams").serialize();
-                } else {
-                    bodyPayload = jQuery("#formAttachment").serialize();
-                }
-            } else { // If a method does not have attach, use standard makeAJAXCall() method to send request.
-                if (jQuery('[data-role="request-payload-example"]').length) {
-                    bodyPayload = window.apiModelEditor.getRequestPayLoad();
-                }
+                headersList.push({"name" : "Authorization", "value" : tok });
             }
-            self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});            
+    
+            // check if theres a bad authorization header
+            if (headersList.length > 0) {
+                var head = headersList[headersList.length-1].value;     
+            } else {
+                head = undefined;
+            }
+            
+            if ((selectedAuthScheme == "passwordgrant" && head == "Bearer" || head == "Bearer ") || head == "" || head == " " || head === undefined) {
+                // show error here and dont let this request send, hence the huge if else
+                console.log(head);
+                // self.clearErrorContainer();
+                jQuery("#working_alert").fadeOut();
+                self.showError("Please fill out your credentials below");
+
+            } else {
+                targetUrl = urlToTest;
+                urlToTest = encodeURIComponent(urlToTest).replace(/\{.*?\}/g,"");
+                urlToTest = Apigee.APIModel.proxyURL+"?targeturl="+urlToTest;
+    
+                // If a method has an attachment, we need to modify the standard AJAX the following way.
+                var bodyPayload = null;
+                var contentTypeValue = "application/x-www-form-urlencoded;charset=utf-8";
+                var processDataValue = true;
+                if (jQuery("[data-role='attachments-list']").length || (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='body-param-list']").length)) {
+                    var multiPartTypes = "";
+                    if (jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9) {
+                        if (localStorage.getItem("unsupportedAttachmentFlag") == null) {
+                            self.showUnsupportedAttachementAlertMessage();
+                        }
+                        jQuery("#working_alert").fadeOut();
+                        return;
+                    }
+                    if (jQuery("[data-role='body-param-list']").length) {
+                        var formParams = jQuery("#formParams").serialize();
+                        if (!jQuery("#formAttachment input[name='root-fields']").length) {
+                            jQuery("#formAttachment").prepend('<input type="hidden" name="root-fields" value="'+formParams+'"/>');
+                        } else {
+                            jQuery("#formAttachment input[name='root-fields']").val(formParams);
+                        }
+                        multiPartTypes = "param"; 
+                        if (jQuery('[data-role="request-payload-example"]').length || jQuery("[data-role='attachments-list']").length) {
+                            multiPartTypes += (jQuery('[data-role="request-payload-example"]').length) ? "+text" : "";
+                            multiPartTypes += (jQuery("[data-role='attachments-list']").length) ? "+attachment" : "";
+                            urlToTest += "&multiparttypes="+multiPartTypes;
+                        }
+                    } else {
+                        for (var i=0,l=headersList.length; i<l; i++) {
+                            if (headersList[i].name == "Content-Type") {
+                                headersList.splice(i,1);
+                            }
+                        }
+                        if (jQuery('[data-role="request-payload-example"]').length && jQuery("[data-role='attachments-list']").length) {
+                            urlToTest += "&multiparttypes=text+attachment";
+                        }
+                    }
+    
+                    if (jQuery('[data-role="request-payload-example"]').length) {
+                        if (!jQuery("#formAttachment textarea[name='text']").length) {
+                            if (jQuery("#formAttachment input[name='root-fields']").length) {
+                                jQuery("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>").insertAfter("#formAttachment input[name='root-fields']");
+                            } else {
+                                jQuery("#formAttachment").prepend("<textarea class='hide' name='text'>"+window.apiModelEditor.getRequestPayLoad()+"</textarea>");
+                            }    
+                        } else {
+                            jQuery("#formAttachment textarea[name='text']").val(window.apiModelEditor.getRequestPayLoad());
+                        }
+                    }
+                    if (jQuery("#formParams").length) {
+                        bodyPayload = new FormData(jQuery("form")[1]); // Create an arbitrary FormData instance
+                    } else {
+                        bodyPayload = new FormData(jQuery("form")[0]); // Create an arbitrary FormData instance
+                    }
+                    contentTypeValue = false;
+                    processDataValue = false;
+                    
+                } else if (jQuery("[data-role='body-param-list']").length) {
+                    if (jQuery("#formParams").length) {
+                        bodyPayload = jQuery("#formParams").serialize();
+                    } else {
+                        bodyPayload = jQuery("#formAttachment").serialize();
+                    }
+                } else { // If a method does not have attach, use standard makeAJAXCall() method to send request.
+                    if (jQuery('[data-role="request-payload-example"]').length) {
+                        bodyPayload = window.apiModelEditor.getRequestPayLoad();
+                    }
+                }
+                self.makeAJAXCall({"url":urlToTest, "type":methodVerb, "data":bodyPayload, "callback":self.renderRequest, "headers":headersList, "contentType":contentTypeValue, "processData":processDataValue});            
+            }
+        } else {
+            self.showError("Please choose an authentication type.");
         }
     };
     /**
@@ -1616,7 +1630,7 @@ Apigee.APIModel.Editor = function() {
         } else if (type == "passwordgrant") {         // TODO: TEST this - it adds password grant support to this
             sessionStorage.removeItem('apisPasswordGrantDetails');
             localStorage.removeItem('apisPasswordGrantDetails');
-            jQuery("[data-role='password_grant_container']").find(".link_open_basicauth").html("Set...").attr('title','Set basic auth credentials.');
+            jQuery("[data-role='password_grant_container']").find(".link_open_passwordgrant").html("Set...").attr('title','Set password grant credentials.');
             jQuery("[data-role='password_grant_container']").find(".icon-remove").css('display','none');
         }
 
