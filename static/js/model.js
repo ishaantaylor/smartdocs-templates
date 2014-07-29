@@ -417,6 +417,8 @@ Apigee.APIModel.Editor = function() {
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
+    var managementAPI = "";
+    var getPWGTokenURL = "http://moearthnetworks-test.apigee.net/p/oauth2/token";
 
     // Public methods.
     /**
@@ -1172,7 +1174,7 @@ Apigee.APIModel.Editor = function() {
             switch (selectedAuthScheme) {
                 case "passwordgrant":
                 case "basicauth":
-                    urlToTest = "http://moearthnetworks-test.apigee.net/purina/v1" + self.formatURLforPWG(urlToTest);
+                    urlToTest = managementAPI + "/v1" + self.formatURLforPWG(urlToTest);
                     break;
                 case "customtoken":
                 default:
