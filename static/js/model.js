@@ -1353,6 +1353,7 @@ Apigee.APIModel.Editor = function() {
             return;
         }
         if (typeof data != "object") {
+            console.log(data);
             data = jQuery.parseJSON(data); // Parse the JSON.
         }
         rawCode = unescape(data.responseContent); // Stores response content.
