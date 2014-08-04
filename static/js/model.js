@@ -417,6 +417,8 @@ Apigee.APIModel.Editor = function() {
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
+    var managementAPI = "http://192.168.66.11:8080";    // TODO: change this url to the one displayed on the page
+    var pwgTokenURL = 'http://moearthnetworks-test.apigee.net/purina/oauth2/token';     // TODO: change this back to getting it from api   // also TODO: implement getting the url from api as well
 
     // Public methods.
     /**
@@ -512,7 +514,6 @@ Apigee.APIModel.Editor = function() {
         if (Apigee.APIModel.apiModelBaseUrl) {
             proxyURLLocation = Apigee.APIModel.apiModelBaseUrl +"/v1/o/" + Apigee.APIModel.organizationName;
         }
-        // TODO: rewrite this i think..
         proxyURLLocation = proxyURLLocation + "/apimodels/proxyUrl"; // Proxy URL location format: https://<domain name>/<alpha/beta/v1>/o/apihub/apimodels/proxyUrl
         self.makeAJAXCall({"url":proxyURLLocation, "callback":self.storeProxyURL}); // Make an AJAX call to retrieve proxy URL to make send request call.
         Apigee.APIModel.initMethodsPageEvents();
@@ -562,8 +563,6 @@ Apigee.APIModel.Editor = function() {
                 sessionStorage.apisPasswordGrantDetails = apiName + "@@@" + userEmail + "@@@Bearer " + access_token; 
             }
 
-            // TODO: show the icon to clear the storage- give that option
-
             /* closing dance */
             self.closeAuthModal(); 
             sessionStorage.selectedAuthScheme = apiName +"@@@"+ revisionNumber + "@@@" + "passwordgrant"; // Store seleted auth scheme info in session storage.
@@ -573,7 +572,7 @@ Apigee.APIModel.Editor = function() {
             jQuery("[role='dialog'].modal .error_container").html("Please fill out your basic credentials!").show();
         }
     }
-    /**     // TODO: test this for extreme edge cases AND for different API calls (should work..)
+    /**
      *  Takes original URL for authentication systems (basic, oauth, custom)  
      *  @param  {String} takes the original URL
      *  @return {String} returns properly formatted string for appending to moearthnetworks-test.apigee.net/purina/v1 + / + {string} 
@@ -921,8 +920,10 @@ Apigee.APIModel.Editor = function() {
                 // send request for token
                 var inputData = "grant_type=password&username=" + userEmail + "&password=";
                 self.makeAJAXCall({
-                    'url': 'http://moearthnetworks-test.apigee.net/purina/oauth2/token',
+                    // TODO: change the url for getting the token to be grabbed from drupal
+                    'url': pwgTokenURL,
                     'type': 'POST',
+                    // TODO: test below, make sure it works
                     'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id=" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
                     'contentType': 'application/x-www-form-urlencoded',
                     'callback': self.pwgCallBack
@@ -1014,7 +1015,6 @@ Apigee.APIModel.Editor = function() {
      *  Supports all auth types: basicauth, oauth2, passwordgrant - makes request such that the webpage can render all metadata
      */
     this.sendRequest = function() {
-        console.log(selectedAuthScheme);
         if (selectedAuthScheme != "") {
             jQuery("#working_alert").fadeIn(); // Show working alert message.
             jQuery("#request_response_container .response").html("<p>Make a request and see the response.</p>");
@@ -1169,6 +1169,8 @@ Apigee.APIModel.Editor = function() {
             if ( jQuery.browser.msie && parseInt(jQuery.browser.version) <= 9 && jQuery("[data-role='body-param-list']").length) {
                 headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
             }
+
+            // TODO: Remove this when making changes for drupal
             switch (selectedAuthScheme) {
                 case "passwordgrant":
                 case "basicauth":
@@ -1254,7 +1256,6 @@ Apigee.APIModel.Editor = function() {
             
             if ((selectedAuthScheme == "passwordgrant" && head == "Bearer" || head == "Bearer ") || head == "" || head == " " || head === undefined) {
                 // show error here and dont let this request send, hence the huge if else
-                console.log(head);
                 // self.clearErrorContainer();
                 jQuery("#working_alert").fadeOut();
                 self.showError("Please fill out your credentials below");
@@ -1627,7 +1628,7 @@ Apigee.APIModel.Editor = function() {
             jQuery("[data-role='custom_token_container']").find(".link_open_customtoken").html("Set...").attr('title','Set custom token credentials.');
             jQuery("[data-role='custom_token_container']").find(".icon-remove").css('display','none');
             isCutomTokenShown = false;
-        } else if (type == "passwordgrant") {         // TODO: TEST this - it adds password grant support to this
+        } else if (type == "passwordgrant") {
             sessionStorage.removeItem('apisPasswordGrantDetails');
             localStorage.removeItem('apisPasswordGrantDetails');
             jQuery("[data-role='password_grant_container']").find(".link_open_passwordgrant").html("Set...").attr('title','Set password grant credentials.');
@@ -1875,7 +1876,7 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
         }
         Apigee.APIModel.initInlineEditAdminAuthEvents();
     };
-    /**     // TODO: make a method that accomplishes the same thing for password grant
+    /**
      * The method handles saving basic auth details/displays error to user, when user clicks 'Save' button in the Inline edit Basic Auth pop-up dialog.
      */
     this.saveAuthModal = function() {
@@ -1896,8 +1897,6 @@ Apigee.APIModel.Methods.prototype = new Apigee.APIModel.Common();
             jQuery("[data-role='edit_auth_modal'] .error_container").html(errMessage+"Please try again.").show();
         }
     };
-
-    // TODO: add password grant to this
     this.saveAdminCredentials = function() {
         basicAuth = "Basic "+jQuery.base64Encode(userEmail+':'+ jQuery.trim(jQuery("[data-role='edit_auth_modal']").find("#inputPassword").val()));
         var rememberCheckbox = jQuery("[data-role='edit_auth_modal']").find("#chk_remember").is(":checked");

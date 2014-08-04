@@ -343,7 +343,7 @@
                             <i title="Clear admin credentials." class="icon-remove"></i>
                         </div>
                     </div>
-                    <div class="well passwordgrant" data-role="password_grant_container" style="display:block">
+                    <div class="well passwordgrant" data-role="password_grant_container">
                         <p class="title">Password Grant</p>
                         <div class="details">
                             <a data-toggle="modal" role="button" href="#passwordgrant_modal" title="Set credentials." class="link_open_passwordgrant">Set...</a>
