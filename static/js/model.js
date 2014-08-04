@@ -605,6 +605,7 @@ Apigee.APIModel.Editor = function() {
             if (data) {
                 passwordGrantClientCreds.client_id = data.client_id;
                 passwordGrantClientCreds.client_secret = data.client_secret;
+                pwgTokenURL = data.accessTokenURL;
                 return true;
             } else
                 return false;
@@ -1350,10 +1351,10 @@ Apigee.APIModel.Editor = function() {
             requestContainerElement.html("<strong> An internal error has occurred. Please retry your request.</strong>");
             responseContainerElement.html("<strong> An internal error has occurred. Please retry your request.</strong>");
             return;
-        }
+        }/*
         if (typeof data != "object") {
             data = jQuery.parseJSON(data); // Parse the JSON.
-        }
+        }*/
         rawCode = unescape(data.responseContent); // Stores response content.
         //rawCode = jQuery.parseJSON(rawCode); //:TODO:: check the proxy and fix the issue and remove it.
         //rawCode = unescape(rawCode.responseContent); //:TODO:: check the proxy and fix the issue and remove it.
