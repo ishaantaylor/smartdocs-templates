@@ -527,7 +527,7 @@ Apigee.APIModel.Editor = function() {
     this.storeProxyURL = function(data) {
         Apigee.APIModel.proxyURL = data.proxyUrl;
         Apigee.APIModel.authUrl = data.authUrl;
-        Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
+        // Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
     }
     /**
      * Success callback method of a OAuth2 web serser auth URL AJAX call.
@@ -598,17 +598,15 @@ Apigee.APIModel.Editor = function() {
      *  @return {boolean}   true if valid credentials
      */
     this.renderClientCredentialsPWG = function(data) {
-        var creds = {};
-        if (typeof Drupal != "undefined" && typeof Drupal.settings != "undefined") {
-            // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
-            // see oauth2webserverflow for example
-            if (data) {
-                passwordGrantClientCreds.client_id = data.client_id;
-                passwordGrantClientCreds.client_secret = data.client_secret;
-                pwgTokenURL = data.accessTokenURL;
-                return true;
-            } else
-                return false;
+        // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
+        // see oauth2webserverflow for example
+        if (data) {
+            passwordGrantClientCreds.client_id = data.client_id;
+            passwordGrantClientCreds.client_secret = data.client_secret;
+            pwgTokenURL = data.accessTokenURL;
+            return true;
+        } else {
+            return false;
         }
     }
     /**
