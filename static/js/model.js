@@ -417,8 +417,8 @@ Apigee.APIModel.Editor = function() {
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
-    var managementAPI = "http://192.168.66.11:8080";    // TODO: change this url to the one displayed on the page
-    var pwgTokenURL = "";     // TODO: change this back to getting it from api   // also TODO: implement getting the url from api as well
+    var managementAPI = "https://api.jupiter.apigee.net";           // chose thise becuase it has dans code on it. ignore client creds for demo
+    var pwgTokenURL = "";             // hardcode client credentials for demo.. just grab this token
     var clientCredentialsFlag = false;
 
     // Public methods.
@@ -941,8 +941,8 @@ Apigee.APIModel.Editor = function() {
             var clientCredentialsFlag;
             var passwordGrantClientCreds = {};
             self.makeAJAXCall({
-                "url": Drupal.settings.smartdocs_url,
-                // "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/testapimodel/revisions/1/authschemes/passwordgrant",
+                // "url": Drupal.settings.smartdocs_url,
+                "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/api4/revisions/1/authschemes/passwordgrant",
                 "type": "GET",
                 "headers": headersList,
                 "callback": self.savePWG
@@ -1074,7 +1074,8 @@ Apigee.APIModel.Editor = function() {
     
             }
             //change the variable name to Target URL.
-            var urlToTest = jQuery("[data-role='method_url_container']").text();
+            // var urlToTest = jQuery("[data-role='method_url_container']").text();
+            var urlToTest = managementAPI + "/v1/" + self.formatURLforPWG(jQuery("[data-role='method_url_container']").text()); 
             var methodVerb = jQuery.trim(jQuery("[data-role='verb']").text().toLowerCase()); // Retrieve the verb from the HTML element.
     
             var headersList = [];
@@ -1184,7 +1185,7 @@ Apigee.APIModel.Editor = function() {
                 headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
             }
 
-            // TODO: Remove this when making changes for drupal
+            /* TODO: Remove this when making changes for drupal
             switch (selectedAuthScheme) {
                 case "passwordgrant":
                 case "basicauth":
@@ -1193,7 +1194,7 @@ Apigee.APIModel.Editor = function() {
                 case "customtoken":
                 default:
                     break;
-            }
+            }*/
             urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
             urlToTest = jQuery.trim(urlToTest);
             queryParamString = jQuery.trim(queryParamString);
