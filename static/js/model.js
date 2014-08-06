@@ -418,7 +418,8 @@ Apigee.APIModel.Editor = function() {
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
     var managementAPI = "http://192.168.66.11:8080";    // TODO: change this url to the one displayed on the page
-    var pwgTokenURL = 'http://moearthnetworks-test.apigee.net/purina/oauth2/token';     // TODO: change this back to getting it from api   // also TODO: implement getting the url from api as well
+    var pwgTokenURL = "";     // TODO: change this back to getting it from api   // also TODO: implement getting the url from api as well
+    var clientCredentialsFlag = false;
 
     // Public methods.
     /**
@@ -527,7 +528,7 @@ Apigee.APIModel.Editor = function() {
     this.storeProxyURL = function(data) {
         Apigee.APIModel.proxyURL = data.proxyUrl;
         Apigee.APIModel.authUrl = data.authUrl;
-        // Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
+        Apigee.APIModel.proxyURL = Apigee.APIModel.proxyURL + "/sendrequest";
     }
     /**
      * Success callback method of a OAuth2 web serser auth URL AJAX call.
@@ -593,33 +594,54 @@ Apigee.APIModel.Editor = function() {
         return newURL;
     };
     /**
-     *  Gets client id and client secret from backend
+     *  Gets client id and client secret from management API, sends a request for the token with these values and saves token to storage
      *  @param  {data}      data from request for client creds
-     *  @return {boolean}   true if valid credentials
+     *  @return {Void}      sets clientCredentialsFlag true if valid credentials, false if error or invalid credentials
      */
-    this.renderClientCredentialsPWG = function(data) {
-        // make request to back end to get credentials (these credentials are put into the backend with the drupal module)
-        // see oauth2webserverflow for example
+    this.savePWG = function(data, textStatus, jqXHR) {
         if (data) {
-            passwordGrantClientCreds.client_id = data.client_id;
-            passwordGrantClientCreds.client_secret = data.client_secret;
-            pwgTokenURL = data.accessTokenURL;
-            return true;
+            passwordGrantClientCreds.clientId = data.clientId;
+            passwordGrantClientCreds.clientSecret = data.clientSecret;
+            pwgTokenURL = data.accessTokenUrl;
+            passwordGrantClientCreds.accessTokenUrl = data.accessTokenUrl;
+            clientCredentialsFlag = true;
         } else {
-            return false;
+            clientCredentialsFlag = false;
+        }
+        userEmail = jQuery("#inEmail")[0].value;
+        if (self.validateEmail(userEmail) && clientCredentialsFlag) {
+            // send request for token
+            var inputData = "username=" + userEmail + "&password=";
+            self.makeAJAXCall({
+                // TODO: change the url for getting the token to be grabbed from jupiter (see where pwgTokenUrl is used)
+                'url': pwgTokenURL,
+                'type': 'POST',
+                // TODO: test below, make sure it works
+                'data': inputData + jQuery("#inPassword")[0].value + "&grant_type=password&client_id=" + self.getPWGclientId() + "&client_secret=" + self.getPWGclientSecret(),
+                'contentType': 'application/x-www-form-urlencoded',
+                'callback': self.pwgCallBack
+            });
+            self.clearErrorContainer();
+        } else {
+            jQuery("[role='dialog'].modal .error_container").html("Please refresh and try again!").show();
         }
     }
     /**
-     *  These methods get the client id and client secret required with the initial call to get the access_token.
+     *  These methods get the client_id, client_secret and accessTokenUrl required with the initial call to get the access_token.
      *  @return     {client credential}
      */
-    this.getPWGclient_id = function() {
+    this.getPWGclientId = function() {
         if (passwordGrantClientCreds)
-            return passwordGrantCredentials.client_id;
+            return passwordGrantClientCreds.clientId;
     }
-    this.getPWGclient_secret = function() {
+    this.getPWGclientSecret = function() {
         if (passwordGrantClientCreds)
-            return passwordGrantClientCreds.client_secret;
+            return passwordGrantClientCreds.clientSecret;
+    }
+    this.getAccessTokenUrl = function() {
+        if (passwordGrantClientCreds) {
+            return passwordGrantClientCreds.accessTokenUrl;
+        }
     }
     /**
      * Error callback method of a OAuth2 web serser auth URL AJAX call.
@@ -913,25 +935,18 @@ Apigee.APIModel.Editor = function() {
             selectedAuthScheme = "customtoken";
             self.updateAuthContainer();
         } else if (parentClass.attr('data-role') == 'password_grant_modal' || parentClass.attr('data-role') == 'passwordgrant_modal') {
-            var flag = self.renderClientCredentialsPWG();
-            userEmail = jQuery("#inEmail")[0].value;
-            if (self.validateEmail(userEmail) /*&& flag */) {
-                // send request for token
-                var inputData = "grant_type=password&username=" + userEmail + "&password=";
-                self.makeAJAXCall({
-                    // TODO: change the url for getting the token to be grabbed from drupal
-                    'url': pwgTokenURL,
-                    'type': 'POST',
-                    // TODO: test below, make sure it works
-                    'data': inputData + jQuery("#inPassword")[0].value /* + "&client_id=" + self.getPWGclient_id() + "&client_secret=" + self.getPWGclient_secret() */,
-                    'contentType': 'application/x-www-form-urlencoded',
-                    'callback': self.pwgCallBack
-                });
-                self.clearErrorContainer();
-
-            } else {
-                jQuery("[role='dialog'].modal .error_container").html("Please refresh and try again!").show();
-            }
+            var headersList = {
+                "Authorization": "Basic "+jQuery.base64Encode(jQuery("#inEmail")[0].value + ":" + jQuery("#inPassword")[0].value)
+            };
+            var clientCredentialsFlag;
+            var passwordGrantClientCreds = {};
+            self.makeAJAXCall({
+                "url": Drupal.settings.smartdocs_url,
+                // "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/testapimodel/revisions/1/authschemes/passwordgrant",
+                "type": "GET",
+                "headers": headersList,
+                "callback": self.savePWG
+            });
         }
     };
 
@@ -1351,7 +1366,6 @@ Apigee.APIModel.Editor = function() {
             return;
         }
         if (typeof data != "object") {
-            console.log(data);
             data = jQuery.parseJSON(data); // Parse the JSON.
         }
         rawCode = unescape(data.responseContent); // Stores response content.
