@@ -598,12 +598,13 @@ Apigee.APIModel.Editor = function() {
      *  @param  {data}      data from request for client creds
      *  @return {Void}      sets clientCredentialsFlag true if valid credentials, false if error or invalid credentials
      */
-    this.savePWG = function(data, textStatus, jqXHR) {
+    this.savePWG = function(data) {
         if (data) {
-            passwordGrantClientCreds.clientId = data.clientId;
-            passwordGrantClientCreds.clientSecret = data.clientSecret;
-            pwgTokenURL = data.accessTokenUrl;
-            passwordGrantClientCreds.accessTokenUrl = data.accessTokenUrl;
+            var selected = jQuery( '#appid option:selected' );
+            passwordGrantClientCreds.clientId = selected.attr('data-id');
+            passwordGrantClientCreds.clientSecret = selected.attr('data-secret');
+            pwgTokenURL = "https://api.jupiter.apigee.net/oauth2/token";
+            passwordGrantClientCreds.accessTokenUrl = "https://api.jupiter.apigee.net/oauth2/token";;
             clientCredentialsFlag = true;
         } else {
             clientCredentialsFlag = false;
@@ -940,13 +941,7 @@ Apigee.APIModel.Editor = function() {
             };
             var clientCredentialsFlag;
             var passwordGrantClientCreds = {};
-            self.makeAJAXCall({
-                // "url": Drupal.settings.smartdocs_url,
-                "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/api4/revisions/1/authschemes/passwordgrant",
-                "type": "GET",
-                "headers": headersList,
-                "callback": self.savePWG
-            });
+            self.savePWG(true);
         }
     };
 
