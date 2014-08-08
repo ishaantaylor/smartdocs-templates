@@ -417,8 +417,7 @@ Apigee.APIModel.Editor = function() {
     var revisionNumber = Apigee.APIModel.revisionNumber; // Stores the revision number rendered from template.
     var targetUrl = "";
     var DEFAULT_OPTIONAL_PARAM_OPTION = "-None-"
-    var managementAPI = "http://192.168.66.11:8080";    // TODO: change this url to the one displayed on the page
-    var pwgTokenURL = "";     // TODO: change this back to getting it from api   // also TODO: implement getting the url from api as well
+    var managementAPI = "http://192.168.66.11:8080";     // TODO: change this url to the one displayed on the page, otherwise it will try to send the call to a locally running 4g instance
     var clientCredentialsFlag = false;
 
     // Public methods.
@@ -546,12 +545,44 @@ Apigee.APIModel.Editor = function() {
         }
     };
     /**
-     *  Handles password grant get token callback
+     *  Gets client id and client secret from management API, sends a request for the token (pwgTokenCallBack) with these values and saves token to storage
+     *  @param  {data}      data from request for client creds
+     *  @return {Void}      sets clientCredentialsFlag true if valid credentials, false if error or invalid credentials
+     */
+    this.savePwgCallback = function(data, textStatus, jqXHR) {
+        if (data) {
+            passwordGrantClientCreds.clientId = data.clientId;
+            passwordGrantClientCreds.clientSecret = data.clientSecret;
+            passwordGrantClientCreds.accessTokenUrl = data.accessTokenUrl;
+            clientCredentialsFlag = true;
+        } else {
+            clientCredentialsFlag = false;
+        }
+        userEmail = jQuery("#inEmail")[0].value;
+        if (self.validateEmail(userEmail) && clientCredentialsFlag) {
+            // send request for token
+            var inputData = "username=" + userEmail + "&password=";
+            self.makeAJAXCall({
+                // TODO: change the url for getting the token to be grabbed from jupiter (see where pwgTokenUrl is used)
+                'url': passwordGrantClientCreds.accessTokenUrl,
+                'type': 'POST',
+                // TODO: test below, make sure it works
+                'data': inputData + jQuery("#inPassword")[0].value + "&grant_type=password&client_id=" + self.getPWGclientId() + "&client_secret=" + self.getPWGclientSecret(),
+                'contentType': 'application/x-www-form-urlencoded',
+                'callback': self.pwgTokenCallBack
+            });
+            self.clearErrorContainer();
+        } else {
+            jQuery("[role='dialog'].modal .error_container").html("Please refresh and try again!").show();
+        }
+    }
+    /**
+     *  Handles password grant get access_token operation. This token is coming from usergrid.
      *  @param  {object}    data - response data
      *  @param  textStatus
      *  @param  jqXHR
      */
-    this.pwgCallBack = function(data, textStatus, jqXHR) {
+    this.pwgTokenCallBack = function(data, textStatus, jqXHR) {
         var access_token = data.access_token;
         var rememberCheckbox = jQuery("[data-role='password_grant_modal']").find("#chk_remember").is(":checked");
         if (access_token) {
@@ -593,39 +624,6 @@ Apigee.APIModel.Editor = function() {
         }
         return newURL;
     };
-    /**
-     *  Gets client id and client secret from management API, sends a request for the token with these values and saves token to storage
-     *  @param  {data}      data from request for client creds
-     *  @return {Void}      sets clientCredentialsFlag true if valid credentials, false if error or invalid credentials
-     */
-    this.savePWG = function(data, textStatus, jqXHR) {
-        if (data) {
-            passwordGrantClientCreds.clientId = data.clientId;
-            passwordGrantClientCreds.clientSecret = data.clientSecret;
-            pwgTokenURL = data.accessTokenUrl;
-            passwordGrantClientCreds.accessTokenUrl = data.accessTokenUrl;
-            clientCredentialsFlag = true;
-        } else {
-            clientCredentialsFlag = false;
-        }
-        userEmail = jQuery("#inEmail")[0].value;
-        if (self.validateEmail(userEmail) && clientCredentialsFlag) {
-            // send request for token
-            var inputData = "username=" + userEmail + "&password=";
-            self.makeAJAXCall({
-                // TODO: change the url for getting the token to be grabbed from jupiter (see where pwgTokenUrl is used)
-                'url': pwgTokenURL,
-                'type': 'POST',
-                // TODO: test below, make sure it works
-                'data': inputData + jQuery("#inPassword")[0].value + "&grant_type=password&client_id=" + self.getPWGclientId() + "&client_secret=" + self.getPWGclientSecret(),
-                'contentType': 'application/x-www-form-urlencoded',
-                'callback': self.pwgCallBack
-            });
-            self.clearErrorContainer();
-        } else {
-            jQuery("[role='dialog'].modal .error_container").html("Please refresh and try again!").show();
-        }
-    }
     /**
      *  These methods get the client_id, client_secret and accessTokenUrl required with the initial call to get the access_token.
      *  @return     {client credential}
@@ -938,14 +936,17 @@ Apigee.APIModel.Editor = function() {
             var headersList = {
                 "Authorization": "Basic "+jQuery.base64Encode(jQuery("#inEmail")[0].value + ":" + jQuery("#inPassword")[0].value)
             };
-            var clientCredentialsFlag;
-            var passwordGrantClientCreds = {};
             self.makeAJAXCall({
-                "url": Drupal.settings.smartdocs_url,
-                // "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/testapimodel/revisions/1/authschemes/passwordgrant",
+                /**
+                 *  TODO: in Drupal, (ask Cesar Galindo for reference with this) attribute Drupal.settings.smartdocs_url. 
+                 *  this is the url that retrieves the client credentials for the passwordgrant authscheme (url below applies to 4G management server running on autoplanet)
+                 *  "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/testapimodel/revisions/1/authschemes/passwordgrant",
+                 */
+                // "url": Drupal.settings.smartdocs_url,
+                "url": "http://192.168.66.11:8080/v1/o/testorg/apimodels/modeljs/revisions/1/authschemes/passwordgrant",
                 "type": "GET",
                 "headers": headersList,
-                "callback": self.savePWG
+                "callback": self.savePwgCallback
             });
         }
     };
@@ -1184,7 +1185,7 @@ Apigee.APIModel.Editor = function() {
                 headersList.push({"name" : "Content-Type", "value" : "application/x-www-form-urlencoded"});
             }
 
-            // TODO: Remove this when making changes for drupal
+            /* TODO: Remove this when making changes for drupal
             switch (selectedAuthScheme) {
                 case "passwordgrant":
                 case "basicauth":
@@ -1193,7 +1194,7 @@ Apigee.APIModel.Editor = function() {
                 case "customtoken":
                 default:
                     break;
-            }
+            }*/
             urlToTest = urlToTest.replace(/\{/g,"").replace(/\}/g,"");
             urlToTest = jQuery.trim(urlToTest);
             queryParamString = jQuery.trim(queryParamString);
